@@ -1,5 +1,5 @@
 /// Unique identifier of a processor parameter.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct ParameterId {
     /// String identifier.
     identifier: String,
