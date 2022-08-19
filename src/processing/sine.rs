@@ -11,7 +11,7 @@ pub struct Sine {
     frequency: (f32, ParameterId),
 
     /// Number of output channels.
-    num_channels: usize,
+    channel_count: usize,
 
     /// Phase, used for internal processing.
     phase: f32,
@@ -24,11 +24,11 @@ pub struct Sine {
 }
 impl Sine {
     /// Creates a new [Sine] with default parameters.
-    pub fn new(num_channels: usize, sample_rate: f32) -> Sine {
+    pub fn new(channel_count: usize, sample_rate: f32) -> Sine {
         let mut sine = Sine {
             amplitude: (0.2, ParameterId::new("amplitude")),
             frequency: (440.0, ParameterId::new("frequency")),
-            num_channels,
+            channel_count,
             phase: 0.0,
             phase_increment: 0.0,
             sample_rate,
@@ -51,7 +51,7 @@ impl AudioProcessor for Sine {
     }
 
     fn process(&mut self, buffer: &mut [f32]) {
-        for frame in buffer.chunks_mut(self.num_channels) {
+        for frame in buffer.chunks_mut(self.channel_count) {
             frame.fill(f32::sin(self.phase) * self.amplitude.0);
             self.phase += self.phase_increment;
         }
