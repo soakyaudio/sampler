@@ -1,4 +1,4 @@
-use crate::base::{AudioProcessor, Parameter, ParameterId, ParameterValue};
+use crate::base::{AudioProcessor, Parameter, ParameterId, ParameterValue, MidiReceiver, MidiMessage};
 use std::f32::consts::PI;
 
 /// Simple since wave oscillator for test purposes.
@@ -64,6 +64,7 @@ impl AudioProcessor for Sine {
         for frame in buffer.chunks_mut(self.channel_count) {
             frame.fill(f32::sin(self.phase) * self.amplitude);
             self.phase += self.phase_increment;
+            while self.phase >= 2.0 * PI { self.phase -= 2.0 * PI }
         }
     }
 
@@ -85,6 +86,19 @@ impl AudioProcessor for Sine {
                 self.frequency = value.clamp(20.0, self.sample_rate / 2.0);
                 self.update_phase_increment()
             }
+        }
+    }
+}
+impl MidiReceiver for Sine {
+    fn handle_midi_message(&mut self, message: MidiMessage) {
+        match message {
+            MidiMessage::NoteOn(_, note, velocity) => {
+                // Change frequency and amplitude according to note and velocity.
+                self.amplitude = velocity as f32 / 127.0;
+                self.frequency = 440.0 * f32::powf(2.0, (note as f32 - 69.0) / 12.0);
+                self.update_phase_increment();
+            },
+            _ => (),
         }
     }
 }
