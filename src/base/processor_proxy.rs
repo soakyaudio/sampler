@@ -1,4 +1,4 @@
-use crate::base::{AudioProcessor, ParameterId, ParameterValue};
+use crate::base::{AudioProcessor, ParameterId, ParameterValue, MidiMessage, MidiReceiver};
 use std::{sync::{Arc, Mutex, RwLock}, collections::HashMap};
 
 /// Encapsulates communication with an audio processor that lives on the audio thread.
@@ -51,6 +51,11 @@ impl Clone for ProcessorProxy {
         Self { parameter_map: self.parameter_map.clone(), to_source: self.to_source.clone() }
     }
 }
+impl MidiReceiver for ProcessorProxy {
+    fn handle_midi_message(&mut self, message: MidiMessage) {
+        self.to_source.lock().unwrap().push(ProxyMessage::HandleMidi(message)).ok();
+    }
+}
 
 /// The processor end of the communication channel, serving the proxy.
 pub struct ProcessorProxySource {
@@ -85,9 +90,11 @@ impl ProcessorProxySource {
         self.proxy.0.clone()
     }
 
+    /// Handles proxy messages on a processor.
     pub fn handle_messages(&mut self, processor: &mut dyn AudioProcessor) {
         while let Some(message) = self.from_proxy.pop() {
             match message {
+                ProxyMessage::HandleMidi(message) => processor.handle_midi_message(message),
                 ProxyMessage::SetParameter(id, value) => processor.set_parameter(id, value),
             };
         }
@@ -107,6 +114,9 @@ impl ProcessorProxySource {
 /// Messages sent from proxy to processor.
 #[derive(Debug)]
 enum ProxyMessage {
+    /// Handles a MIDI message.
+    HandleMidi(MidiMessage),
+
     /// Sets a parameter.
     SetParameter(ParameterId, ParameterValue),
 }

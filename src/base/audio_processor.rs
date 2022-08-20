@@ -1,7 +1,7 @@
-use crate::base::{Parameter, ParameterId, ParameterValue};
+use crate::base::{Parameter, ParameterId, ParameterValue, MidiReceiver};
 
 /// Defines a generic audio processor, e.g. an instrument or effect.
-pub trait AudioProcessor: Send {
+pub trait AudioProcessor: Send + MidiReceiver {
     /// Gets a parameter.
     fn get_parameter(&self, id: ParameterId) -> Option<ParameterValue>;
 
