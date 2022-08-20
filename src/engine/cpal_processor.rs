@@ -22,7 +22,7 @@ impl CpalProcessor {
         (cpal_processor, proxy)
     }
 
-    // Updates proxy (e.g. parameters might have changed during processing).
+    /// Updates proxy (e.g. parameters might have changed during processing).
     fn update_proxy(&mut self) {
         self.processor.list_parameters().iter().for_each(|p| {
             self.proxy_source.update_parameter(p.id, self.processor.get_parameter(p.id).unwrap());
