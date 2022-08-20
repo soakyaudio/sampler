@@ -1,4 +1,4 @@
-use crate::base::{AudioProcessor, Parameter, ParameterId, ParameterValue, ProcessorProxySource, ProcessorProxy};
+use crate::base::{AudioProcessor, Parameter, ParameterId, ParameterValue, ProcessorProxySource, ProcessorProxy, MidiReceiver, MidiMessage};
 
 /// Audio processor wrapper for the cpal audio engine, handling thread synchronization.
 pub struct CpalProcessor {
@@ -52,5 +52,10 @@ impl AudioProcessor for CpalProcessor {
     }
     fn set_parameter(&mut self, id: ParameterId, value: ParameterValue) {
         self.processor.set_parameter(id, value);
+    }
+}
+impl MidiReceiver for CpalProcessor {
+    fn handle_midi_message(&mut self, message: MidiMessage) {
+        self.processor.handle_midi_message(message);
     }
 }
