@@ -8,7 +8,7 @@ pub struct CpalAudioEngine {
     _stream: cpal::Stream,
 }
 impl CpalAudioEngine {
-    /// Creates a new [CpalAudioEngine], uses default audio config to init output stream.
+    /// Creates a new cpal audio engine, uses default audio config to init output stream.
     pub fn new(mut processor: CpalProcessor) -> Self {
         // Get default host, output device and config.
         let host = cpal::default_host();

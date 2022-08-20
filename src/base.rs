@@ -5,5 +5,5 @@ mod processor_proxy;
 
 pub use audio_engine::AudioEngine;
 pub use audio_processor::AudioProcessor;
-pub use parameter::{ParameterId, ParameterValue};
+pub use parameter::{Parameter, ParameterId, ParameterValue};
 pub use processor_proxy::{ProcessorProxy, ProcessorProxySource};
