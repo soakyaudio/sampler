@@ -11,3 +11,5 @@ description = ""
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+cpal = "0.13.5"
+ringbuf = "0.2.8"
