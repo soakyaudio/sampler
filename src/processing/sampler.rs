@@ -42,16 +42,21 @@ impl<S: SamplerSound, V: SamplerVoice<S>> Sampler<S, V> {
         self.voices.push(voice);
     }
 
-    /// Note off (usually triggered by a midi message).
+    /// Note off (usually triggered by a MIDI message).
     fn note_off(&mut self, midi_channel: u8, midi_note: u8, velocity: u8) {
-
+        self.voices.iter_mut()
+            .filter(|voice| voice.get_active_note() == Some(midi_note))
+            .for_each(|voice| voice.stop_note(velocity as f32 / 127.0, true));
     }
 
-    /// Note on (usually triggered by a midi message).
+    /// Note on (usually triggered by a MIDI message).
     fn note_on(&mut self, midi_channel: u8, midi_note: u8, velocity: u8) {
-        let voice = self.voices.first_mut().unwrap();
-        let sound = self.sounds.first().unwrap();
-        voice.start_note(midi_note, velocity as f32 / 127.0, sound.clone());
+        // Find free voice.
+        let voice = self.voices.iter_mut().find(|voice| !voice.is_playing());
+        if let Some(voice) = voice {
+            let sound = self.sounds.first().unwrap().clone();
+            voice.start_note(midi_note, velocity as f32 / 127.0, sound);
+        }
     }
 }
 impl<S: SamplerSound, V: SamplerVoice<S>> AudioProcessor for Sampler<S, V> {
@@ -60,12 +65,18 @@ impl<S: SamplerSound, V: SamplerVoice<S>> AudioProcessor for Sampler<S, V> {
     }
 
     fn list_parameters(&self) -> &[Parameter] {
-        todo!()
+        const P: [Parameter; 0] = [];
+        &P
     }
 
     fn process(&mut self, buffer: &mut [f32]) {
+        buffer.fill(0.0); // Clean state.
+
         // Render voices.
         self.voices.iter_mut().for_each(|voice| voice.render(buffer));
+
+        // Adjust volume.
+        buffer.iter_mut().for_each(|s| *s *= 0.2);
     }
 
     fn reset(&mut self, sample_rate: f32, max_buffer_size: usize) {
@@ -74,7 +85,7 @@ impl<S: SamplerSound, V: SamplerVoice<S>> AudioProcessor for Sampler<S, V> {
     }
 
     fn set_channel_layout(&mut self, input_channels: u16, output_channels: u16) {
-        todo!()
+
     }
 
     fn set_parameter(&mut self, id: ParameterId, value: ParameterValue) {

@@ -5,7 +5,13 @@ mod processing;
 use processing::{Sampler, OscillatorSound, OscillatorVoice};
 
 fn main() {
-    let sampler: Sampler<OscillatorSound, OscillatorVoice> = Sampler::new();
+    let mut sampler: Sampler<OscillatorSound, OscillatorVoice> = Sampler::new();
+
+    for _ in 1..10 {
+        sampler.add_voice(OscillatorVoice::new());
+    }
+    sampler.add_sound(OscillatorSound::new());
+
     let (processor, proxy) = engine::CpalProcessor::new(Box::new(sampler));
     let _audio_engine = engine::CpalAudioEngine::new(processor);
     let _midi_engine = engine::MidirMidiEngine::new(proxy);

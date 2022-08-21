@@ -4,6 +4,9 @@ use super::SamplerSound;
 
 /// Defines a voice that a sampler can use to play a sampler sound.
 pub trait SamplerVoice<Sound: SamplerSound>: Send {
+    /// Returns current MIDI note if playing, [None] otherwise.
+    fn get_active_note(&self) -> Option<u8>;
+
     /// Returns whether voice is currently in use.
     fn is_playing(&self) -> bool;
 

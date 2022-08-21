@@ -3,8 +3,8 @@ use std::{f32::consts::PI, cell::{RefCell, Ref}, borrow::Borrow, sync::Arc};
 
 /// Oscillator voice for sampler.
 pub struct OscillatorVoice {
-    /// Sound that is currently playing.
-    active_sound: Option<Arc<OscillatorSound>>,
+    /// Sound and MIDI note that is currently playing.
+    active_sound: Option<(Arc<OscillatorSound>, u8)>,
 
     /// Gain applied to sound.
     gain: f32,
@@ -20,7 +20,7 @@ pub struct OscillatorVoice {
 }
 impl OscillatorVoice {
     /// Creates new oscillator voice.
-    pub fn new(channel_count: u16) -> Self {
+    pub fn new() -> Self {
         OscillatorVoice {
             active_sound: None,
             gain: 0.0,
@@ -36,6 +36,10 @@ impl OscillatorVoice {
     }
 }
 impl SamplerVoice<OscillatorSound> for OscillatorVoice {
+    fn get_active_note(&self) -> Option<u8> {
+        if let Some((_, note)) = self.active_sound { Some(note) } else { None }
+    }
+
     fn is_playing(&self) -> bool {
         self.active_sound.is_some()
     }
@@ -43,7 +47,8 @@ impl SamplerVoice<OscillatorSound> for OscillatorVoice {
     fn render(&mut self, buffer: &mut [f32]) {
         if let Some(sound) = &self.active_sound {
             for frame in buffer.chunks_mut(2) { // TODO: Support other channel configs.
-                frame.fill(sound.get_value(self.phase) * self.gain);
+                let sample = sound.0.get_value(self.phase) * self.gain;
+                frame.iter_mut().for_each(|s| *s += sample);
                 self.phase += self.phase_increment;
                 while self.phase >= 2.0 * PI { self.phase -= 2.0 * PI }
             }
@@ -58,10 +63,12 @@ impl SamplerVoice<OscillatorSound> for OscillatorVoice {
 
     fn start_note(&mut self, midi_note: u8, velocity: f32, sound: Arc<OscillatorSound>) {
         let frequency = 440.0 * f32::powf(2.0, (midi_note as f32 - 69.0) / 12.0);
-        self.active_sound = Some(sound);
+        self.gain = velocity;
+        self.active_sound = Some((sound, midi_note));
+        self.update_phase_increment(frequency);
     }
 
     fn stop_note(&mut self, velocity: f32, allow_tail: bool) {
-        todo!()
+        self.active_sound = None;
     }
 }
