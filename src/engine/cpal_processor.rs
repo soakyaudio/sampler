@@ -50,6 +50,9 @@ impl AudioProcessor for CpalProcessor {
     fn reset(&mut self, sample_rate: f32, max_buffer_size: usize) {
         self.processor.reset(sample_rate, max_buffer_size);
     }
+    fn set_channel_layout(&mut self, input_channels: u16, output_channels: u16) {
+        self.processor.set_channel_layout(input_channels, output_channels);
+    }
     fn set_parameter(&mut self, id: ParameterId, value: ParameterValue) {
         self.processor.set_parameter(id, value);
     }

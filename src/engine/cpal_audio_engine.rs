@@ -29,6 +29,7 @@ impl CpalAudioEngine {
             cpal::SupportedBufferSize::Range { min: _, max } => *max as usize,
             cpal::SupportedBufferSize::Unknown => 4096,
         };
+        processor.set_channel_layout(0, config.channels());
         processor.reset(config.sample_rate().0 as f32, max_buffer_size);
 
         // Create output stream.

@@ -5,7 +5,7 @@ mod processing;
 use processing::Sine;
 
 fn main() {
-    let sine = Sine::new(2);
+    let sine = Sine::new();
     let (processor, proxy) = engine::CpalProcessor::new(Box::new(sine));
     let _audio_engine = engine::CpalAudioEngine::new(processor);
     let _midi_engine = engine::MidirMidiEngine::new(proxy);

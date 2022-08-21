@@ -11,7 +11,7 @@ pub struct Sine {
     frequency: f32,
 
     /// Number of output channels.
-    channel_count: usize,
+    channel_count: u16,
 
     /// Phase, used for internal processing.
     phase: f32,
@@ -30,11 +30,11 @@ impl Sine {
     pub const Frequency: Parameter = Parameter::new(1, "frequency");
 
     /// Creates a new sine processor with default parameters.
-    pub fn new(channel_count: usize) -> Sine {
+    pub fn new() -> Sine {
         let mut sine = Sine {
             amplitude: 0.2,
             frequency: 440.0,
-            channel_count,
+            channel_count: 0,
             phase: 0.0,
             phase_increment: 0.0,
             sample_rate: 44100.0,
@@ -48,7 +48,7 @@ impl Sine {
         self.phase_increment = 2.0 * PI * self.frequency / self.sample_rate;
     }
 }
-#[allow(irrefutable_let_patterns)] // TODO: remove
+#[allow(irrefutable_let_patterns)] // TODO: Remove.
 impl AudioProcessor for Sine {
     fn get_parameter(&self, id: ParameterId) -> Option<ParameterValue> {
         if id == Sine::Amplitude.id { Some(ParameterValue::Float(self.amplitude)) }
@@ -61,7 +61,7 @@ impl AudioProcessor for Sine {
     }
 
     fn process(&mut self, buffer: &mut [f32]) {
-        for frame in buffer.chunks_mut(self.channel_count) {
+        for frame in buffer.chunks_mut(self.channel_count as usize) {
             frame.fill(f32::sin(self.phase) * self.amplitude);
             self.phase += self.phase_increment;
             while self.phase >= 2.0 * PI { self.phase -= 2.0 * PI }
@@ -69,10 +69,14 @@ impl AudioProcessor for Sine {
     }
 
     fn reset(&mut self, sample_rate: f32, _max_buffer_size: usize) {
-        self.frequency = self.frequency.clamp(20.0, sample_rate / 2.0); // avoid aliasing
+        self.frequency = self.frequency.clamp(20.0, sample_rate / 2.0); // Avoid aliasing.
         self.phase = 0.0;
         self.sample_rate = sample_rate;
         self.update_phase_increment();
+    }
+
+    fn set_channel_layout(&mut self, _input_channels: u16, output_channels: u16) {
+        self.channel_count = output_channels;
     }
 
     fn set_parameter(&mut self, id: ParameterId, value: ParameterValue) {
