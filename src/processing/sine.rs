@@ -7,7 +7,7 @@ pub struct Sine {
     /// Amplitude parameter. Valid range is 0.0 to 1.0, default 0.2.
     amplitude: f32,
 
-    /// Frequency parameter in Hz. Valid range is 20 Hz to (SampleRate/2), default 440 Hz.
+    /// Frequency parameter in Hz. Valid range is 20Hz to (SampleRate/2)Hz, default 440Hz.
     frequency: f32,
 
     /// Number of output channels.

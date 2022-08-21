@@ -7,7 +7,7 @@ use processing::{Sampler, OscillatorSound, OscillatorVoice};
 fn main() {
     let mut sampler: Sampler<OscillatorSound, OscillatorVoice> = Sampler::new();
 
-    for _ in 1..10 {
+    for _ in 0..64 {
         sampler.add_voice(OscillatorVoice::new());
     }
     sampler.add_sound(OscillatorSound::new());

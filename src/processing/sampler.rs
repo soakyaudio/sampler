@@ -1,15 +1,16 @@
+mod linear_adsr;
 mod oscillator_sound;
 mod oscillator_voice;
 mod sampler_sound;
 mod sampler_voice;
 
-use std::{cell::RefCell, sync::Arc};
-
 use crate::base::{MidiMessage, AudioProcessor, Parameter, ParameterId, ParameterValue, MidiReceiver};
+pub use linear_adsr::LinearAdsr;
 pub use oscillator_sound::OscillatorSound;
 pub use oscillator_voice::OscillatorVoice;
 pub use sampler_sound::SamplerSound;
 pub use sampler_voice::SamplerVoice;
+use std::{sync::Arc};
 
 /// Sampler instrument processor.
 pub struct Sampler<Sound, Voice>
@@ -117,6 +118,7 @@ impl<S: SamplerSound, V: SamplerVoice<S>> MidiReceiver for Sampler<S, V> {
     fn handle_midi_message(&mut self, message: MidiMessage) {
         match message {
             MidiMessage::NoteOff(channel, note, velocity) => self.note_off(channel, note, velocity),
+            MidiMessage::NoteOn(channel, note, 0) => self.note_off(channel, note, 0), // MIDI running status.
             MidiMessage::NoteOn(channel, note, velocity) => self.note_on(channel, note, velocity),
         }
     }
