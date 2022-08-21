@@ -17,6 +17,12 @@ where
     Sound: SamplerSound,
     Voice: SamplerVoice<Sound>,
 {
+    /// Number of output channels.
+    channel_count: u16,
+
+    /// Internal audio buffer (to mix stereo to mono).
+    internal_buffer: Box<[f32]>,
+
     /// Sampler sounds.
     sounds: Vec<Arc<Sound>>,
 
@@ -27,6 +33,8 @@ impl<S: SamplerSound, V: SamplerVoice<S>> Sampler<S, V> {
     /// Creates new sampler.
     pub fn new() -> Self {
         Sampler {
+            channel_count: 0,
+            internal_buffer: Box::new([]),
             sounds: Vec::new(),
             voices: Vec::new(),
         }
@@ -65,27 +73,40 @@ impl<S: SamplerSound, V: SamplerVoice<S>> AudioProcessor for Sampler<S, V> {
     }
 
     fn list_parameters(&self) -> &[Parameter] {
-        const P: [Parameter; 0] = [];
-        &P
+        &[]
     }
 
-    fn process(&mut self, buffer: &mut [f32]) {
-        buffer.fill(0.0); // Clean state.
+    fn process(&mut self, out_buffer: &mut [f32]) {
+        // Prepare internal buffer.
+        let frame_count = out_buffer.len() / self.channel_count as usize;
+        let internal_buffer = &mut self.internal_buffer[0..2*frame_count]; // Stereo.
+        internal_buffer.fill(0.0);
 
         // Render voices.
-        self.voices.iter_mut().for_each(|voice| voice.render(buffer));
+        self.voices.iter_mut().for_each(|voice| voice.render(internal_buffer));
 
-        // Adjust volume.
-        buffer.iter_mut().for_each(|s| *s *= 0.2);
+        // Mix internal buffer into output buffer.
+        if self.channel_count == 1 {
+            for (out, int) in out_buffer.iter_mut().zip(internal_buffer.chunks_mut(2)) {
+                *out = 0.5 * (int[0] + int[1]); // Mono output.
+            }
+        } else {
+            for (out, int) in out_buffer.chunks_mut(self.channel_count as usize).zip(internal_buffer.chunks_mut(2)) {
+                (out[0], out[1]) = (int[0], int[1]); // Stereo output, ignore other channels.
+            }
+        }
     }
 
     fn reset(&mut self, sample_rate: f32, max_buffer_size: usize) {
+        // Allocate internal resources.
+        self.internal_buffer = vec![0.0; 2 * max_buffer_size].into_boxed_slice();
+
         // Reset voices.
         self.voices.iter_mut().for_each(|voice| voice.reset(sample_rate, max_buffer_size));
     }
 
-    fn set_channel_layout(&mut self, input_channels: u16, output_channels: u16) {
-
+    fn set_channel_layout(&mut self, _input_channels: u16, output_channels: u16) {
+        self.channel_count = output_channels;
     }
 
     fn set_parameter(&mut self, id: ParameterId, value: ParameterValue) {

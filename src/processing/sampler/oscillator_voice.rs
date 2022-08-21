@@ -46,8 +46,8 @@ impl SamplerVoice<OscillatorSound> for OscillatorVoice {
 
     fn render(&mut self, buffer: &mut [f32]) {
         if let Some(sound) = &self.active_sound {
-            for frame in buffer.chunks_mut(2) { // TODO: Support other channel configs.
-                let sample = sound.0.get_value(self.phase) * self.gain;
+            for frame in buffer.chunks_mut(2) { // Sampler expects stereo.
+                let sample = sound.0.get_value(self.phase) * self.gain * 0.1; // TODO
                 frame.iter_mut().for_each(|s| *s += sample);
                 self.phase += self.phase_increment;
                 while self.phase >= 2.0 * PI { self.phase -= 2.0 * PI }
