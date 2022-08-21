@@ -3,6 +3,8 @@ mod oscillator_voice;
 mod sampler_sound;
 mod sampler_voice;
 
+use std::{cell::RefCell, sync::Arc};
+
 use crate::base::{MidiMessage, AudioProcessor, Parameter, ParameterId, ParameterValue, MidiReceiver};
 pub use oscillator_sound::OscillatorSound;
 pub use oscillator_voice::OscillatorVoice;
@@ -13,15 +15,15 @@ pub use sampler_voice::SamplerVoice;
 pub struct Sampler<Sound, Voice>
 where
     Sound: SamplerSound,
-    Voice: for<'a> SamplerVoice<'a, Sound>,
+    Voice: SamplerVoice<Sound>,
 {
     /// Sampler sounds.
-    sounds: Vec<Sound>,
+    sounds: Vec<Arc<Sound>>,
 
     /// Sampler voices.
     voices: Vec<Voice>,
 }
-impl<S: SamplerSound, V: for<'a> SamplerVoice<'a, S>> Sampler<S, V> {
+impl<S: SamplerSound, V: SamplerVoice<S>> Sampler<S, V> {
     /// Creates new sampler.
     pub fn new() -> Self {
         Sampler {
@@ -32,7 +34,7 @@ impl<S: SamplerSound, V: for<'a> SamplerVoice<'a, S>> Sampler<S, V> {
 
     /// Adds a sound.
     pub fn add_sound(&mut self, sound: S) {
-        self.sounds.push(sound);
+        self.sounds.push(Arc::new(sound));
     }
 
     /// Adds a voice.
@@ -49,10 +51,10 @@ impl<S: SamplerSound, V: for<'a> SamplerVoice<'a, S>> Sampler<S, V> {
     fn note_on(&mut self, midi_channel: u8, midi_note: u8, velocity: u8) {
         let voice = self.voices.first_mut().unwrap();
         let sound = self.sounds.first().unwrap();
-        voice.start_note(midi_note, velocity as f32 / 127.0, sound);
+        voice.start_note(midi_note, velocity as f32 / 127.0, sound.clone());
     }
 }
-impl<S: SamplerSound, V: for<'a> SamplerVoice<'a, S>> AudioProcessor for Sampler<S, V> {
+impl<S: SamplerSound, V: SamplerVoice<S>> AudioProcessor for Sampler<S, V> {
     fn get_parameter(&self, id: ParameterId) -> Option<ParameterValue> {
         todo!()
     }
@@ -79,7 +81,7 @@ impl<S: SamplerSound, V: for<'a> SamplerVoice<'a, S>> AudioProcessor for Sampler
         todo!()
     }
 }
-impl<S: SamplerSound, V: for<'a> SamplerVoice<'a, S>> MidiReceiver for Sampler<S, V> {
+impl<S: SamplerSound, V: SamplerVoice<S>> MidiReceiver for Sampler<S, V> {
     fn handle_midi_message(&mut self, message: MidiMessage) {
         match message {
             MidiMessage::NoteOff(channel, note, velocity) => self.note_off(channel, note, velocity),

@@ -1,10 +1,10 @@
 use super::{SamplerVoice, OscillatorSound};
-use std::f32::consts::PI;
+use std::{f32::consts::PI, cell::{RefCell, Ref}, borrow::Borrow, sync::Arc};
 
 /// Oscillator voice for sampler.
-pub struct OscillatorVoice<'a> {
+pub struct OscillatorVoice {
     /// Sound that is currently playing.
-    active_sound: Option<&'a OscillatorSound>,
+    active_sound: Option<Arc<OscillatorSound>>,
 
     /// Gain applied to sound.
     gain: f32,
@@ -18,7 +18,7 @@ pub struct OscillatorVoice<'a> {
     /// Sample rate in Hz.
     sample_rate: f32,
 }
-impl<'a> OscillatorVoice<'a> {
+impl OscillatorVoice {
     /// Creates new oscillator voice.
     pub fn new(channel_count: u16) -> Self {
         OscillatorVoice {
@@ -35,13 +35,13 @@ impl<'a> OscillatorVoice<'a> {
         self.phase_increment = 2.0 * PI * frequency / self.sample_rate;
     }
 }
-impl<'a> SamplerVoice<'a, OscillatorSound> for OscillatorVoice<'a> {
+impl SamplerVoice<OscillatorSound> for OscillatorVoice {
     fn is_playing(&self) -> bool {
         self.active_sound.is_some()
     }
 
     fn render(&mut self, buffer: &mut [f32]) {
-        if let Some(sound) = self.active_sound {
+        if let Some(sound) = &self.active_sound {
             for frame in buffer.chunks_mut(2) { // TODO: Support other channel configs.
                 frame.fill(sound.get_value(self.phase) * self.gain);
                 self.phase += self.phase_increment;
@@ -56,7 +56,7 @@ impl<'a> SamplerVoice<'a, OscillatorSound> for OscillatorVoice<'a> {
         // Other parameters will be reset on note start.
     }
 
-    fn start_note(&mut self, midi_note: u8, velocity: f32, sound: &'a OscillatorSound) {
+    fn start_note(&mut self, midi_note: u8, velocity: f32, sound: Arc<OscillatorSound>) {
         let frequency = 440.0 * f32::powf(2.0, (midi_note as f32 - 69.0) / 12.0);
         self.active_sound = Some(sound);
     }
