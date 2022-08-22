@@ -1,7 +1,10 @@
 /// MIDI message type.
 #[derive(Clone, Copy, Debug)]
 pub enum MidiMessage {
-    // Note off: channel, note number, velocity.
+    /// Control change: channel, control number, value.
+    ControlChange(u8, u8, u8),
+
+    /// Note off: channel, note number, velocity.
     NoteOff(u8, u8, u8),
 
     /// Note on: channel, note number, velocity.
@@ -14,6 +17,7 @@ impl MidiMessage {
             match status & 0xF0 {
                 0x80 => Some(MidiMessage::NoteOff(status & 0x0F, *data1, *data2)),
                 0x90 => Some(MidiMessage::NoteOn(status & 0x0F, *data1, *data2)),
+                0xB0 => Some(MidiMessage::ControlChange(status & 0x0F, *data1, *data2)),
                 _ => None,
             }
         } else {

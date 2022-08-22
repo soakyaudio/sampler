@@ -27,6 +27,9 @@ where
     /// Sampler sounds.
     sounds: Vec<Arc<Sound>>,
 
+    /// Sustain pedal state.
+    sustain_pedal_pressed: bool,
+
     /// Sampler voices.
     voices: Vec<Voice>,
 }
@@ -37,6 +40,7 @@ impl<S: SamplerSound, V: SamplerVoice<S>> Sampler<S, V> {
             channel_count: 0,
             internal_buffer: Box::new([]),
             sounds: Vec::new(),
+            sustain_pedal_pressed: false,
             voices: Vec::new(),
         }
     }
@@ -51,20 +55,41 @@ impl<S: SamplerSound, V: SamplerVoice<S>> Sampler<S, V> {
         self.voices.push(voice);
     }
 
+    /// Handles sustain pedal (usually triggered by a MIDI message).
+    fn sustain_pedal(&mut self, pressed: bool) {
+        self.sustain_pedal_pressed = pressed;
+        if !pressed {
+            self.voices.iter_mut()
+                .filter(|voice| voice.is_playing() && !voice.is_key_down())
+                .for_each(|voice| voice.stop_note(0.0, true));
+        }
+    }
+
     /// Note off (usually triggered by a MIDI message).
-    fn note_off(&mut self, midi_channel: u8, midi_note: u8, velocity: u8) {
+    fn note_off(&mut self, _midi_channel: u8, midi_note: u8, velocity: u8) {
         self.voices.iter_mut()
             .filter(|voice| voice.get_active_note() == Some(midi_note))
-            .for_each(|voice| voice.stop_note(velocity as f32 / 127.0, true));
+            .for_each(|voice| {
+                voice.set_key_down(false);
+                if !self.sustain_pedal_pressed {
+                    voice.stop_note(velocity as f32 / 127.0, true);
+                }
+            });
     }
 
     /// Note on (usually triggered by a MIDI message).
-    fn note_on(&mut self, midi_channel: u8, midi_note: u8, velocity: u8) {
+    fn note_on(&mut self, _midi_channel: u8, midi_note: u8, velocity: u8) {
+        // If hitting a note that's still ringing, stop it first (sustain pedal).
+        self.voices.iter_mut()
+            .filter(|voice| voice.get_active_note().map_or(false, |note| note == midi_note))
+            .for_each(|voice| voice.stop_note(0.0, true));
+
         // Find free voice.
         let voice = self.voices.iter_mut().find(|voice| !voice.is_playing());
         if let Some(voice) = voice {
             let sound = self.sounds.first().unwrap().clone();
             voice.start_note(midi_note, velocity as f32 / 127.0, sound);
+            voice.set_key_down(true);
         }
     }
 }
@@ -117,9 +142,11 @@ impl<S: SamplerSound, V: SamplerVoice<S>> AudioProcessor for Sampler<S, V> {
 impl<S: SamplerSound, V: SamplerVoice<S>> MidiReceiver for Sampler<S, V> {
     fn handle_midi_message(&mut self, message: MidiMessage) {
         match message {
+            MidiMessage::ControlChange(_, 0x40, value) => self.sustain_pedal(value >= 64),
             MidiMessage::NoteOff(channel, note, velocity) => self.note_off(channel, note, velocity),
             MidiMessage::NoteOn(channel, note, 0) => self.note_off(channel, note, 0), // MIDI running status.
             MidiMessage::NoteOn(channel, note, velocity) => self.note_on(channel, note, velocity),
+            _ => (),
         }
     }
 }

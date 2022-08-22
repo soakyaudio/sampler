@@ -12,6 +12,9 @@ pub struct OscillatorVoice {
     /// Gain applied to sound.
     gain: f32,
 
+    /// Key down state.
+    key_down: bool,
+
     /// Phase, used for internal processing.
     phase: f32,
 
@@ -26,8 +29,9 @@ impl OscillatorVoice {
     pub fn new() -> Self {
         OscillatorVoice {
             active_sound: None,
-            adsr: LinearAdsr::new(0.1, 0.3),
+            adsr: LinearAdsr::new(0.03, 0.1),
             gain: 0.0,
+            key_down: false,
             phase: 0.0,
             phase_increment: 0.0,
             sample_rate: 44100.0,
@@ -42,6 +46,10 @@ impl OscillatorVoice {
 impl SamplerVoice<OscillatorSound> for OscillatorVoice {
     fn get_active_note(&self) -> Option<u8> {
         if let Some((_, note)) = self.active_sound { Some(note) } else { None }
+    }
+
+    fn is_key_down(&self) -> bool {
+        self.key_down
     }
 
     fn is_playing(&self) -> bool {
@@ -68,6 +76,10 @@ impl SamplerVoice<OscillatorSound> for OscillatorVoice {
         self.adsr.reset(sample_rate);
         self.sample_rate = sample_rate;
         // Other parameters will be reset on note start.
+    }
+
+    fn set_key_down(&mut self, key_down: bool) {
+        self.key_down = key_down;
     }
 
     fn start_note(&mut self, midi_note: u8, velocity: f32, sound: Arc<OscillatorSound>) {
