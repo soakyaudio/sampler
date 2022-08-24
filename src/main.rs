@@ -2,12 +2,19 @@ mod base;
 mod engine;
 mod processing;
 
-use processing::Sine;
+use processing::{Sampler, OscillatorSound, OscillatorVoice};
 
 fn main() {
-    let sine = Sine::new();
-    let (processor, proxy) = engine::CpalProcessor::new(Box::new(sine));
+    let mut sampler: Sampler<OscillatorSound, OscillatorVoice> = Sampler::new();
+
+    for _ in 0..64 {
+        sampler.add_voice(OscillatorVoice::new());
+    }
+    sampler.add_sound(OscillatorSound::new());
+
+    let (processor, proxy) = engine::CpalProcessor::new(Box::new(sampler));
     let _audio_engine = engine::CpalAudioEngine::new(processor);
     let _midi_engine = engine::MidirMidiEngine::new(proxy);
+
     std::thread::park();
 }
