@@ -14,4 +14,8 @@ impl OscillatorSound {
         f32::sin(phase) // Only sine waves for now.
     }
 }
-impl SamplerSound for OscillatorSound {}
+impl SamplerSound for OscillatorSound {
+    fn applies_to_note(&self, _midi_note: u8) -> bool {
+        true
+    }
+}

@@ -93,9 +93,11 @@ impl<S: SamplerSound, V: SamplerVoice<S>> Sampler<S, V> {
         // Find free voice.
         let voice = self.voices.iter_mut().find(|voice| !voice.is_playing());
         if let Some(voice) = voice {
-            let sound = self.sounds.first().unwrap().clone();
-            voice.start_note(midi_note, velocity as f32 / 127.0, sound);
-            voice.set_key_down(true);
+            // Find matching sound.
+            if let Some(sound) = self.sounds.iter().find(|sound| sound.applies_to_note(midi_note)) {
+                voice.start_note(midi_note, velocity as f32 / 127.0, sound.clone());
+                voice.set_key_down(true);
+            }
         }
     }
 }
