@@ -55,6 +55,12 @@ impl<S: SamplerSound, V: SamplerVoice<S>> Sampler<S, V> {
         self.voices.push(voice);
     }
 
+    /// All notes off (usually triggered by a MIDI message).
+    fn all_notes_off(&mut self, allow_tail: bool) {
+        self.voices.iter_mut()
+            .for_each(|voice| voice.stop_note(0.0, allow_tail));
+    }
+
     /// Handles sustain pedal (usually triggered by a MIDI message).
     fn sustain_pedal(&mut self, pressed: bool) {
         self.sustain_pedal_pressed = pressed;
@@ -143,6 +149,7 @@ impl<S: SamplerSound, V: SamplerVoice<S>> MidiReceiver for Sampler<S, V> {
     fn handle_midi_message(&mut self, message: MidiMessage) {
         match message {
             MidiMessage::ControlChange(_, 0x40, value) => self.sustain_pedal(value >= 64),
+            MidiMessage::ControlChange(_, 0x7B, _) => self.all_notes_off(true),
             MidiMessage::NoteOff(channel, note, velocity) => self.note_off(channel, note, velocity),
             MidiMessage::NoteOn(channel, note, 0) => self.note_off(channel, note, 0), // MIDI running status.
             MidiMessage::NoteOn(channel, note, velocity) => self.note_on(channel, note, velocity),

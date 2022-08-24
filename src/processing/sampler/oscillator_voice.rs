@@ -1,5 +1,5 @@
 use super::{SamplerVoice, OscillatorSound, LinearAdsr};
-use std::{f32::consts::PI, cell::{RefCell, Ref}, borrow::Borrow, sync::Arc};
+use std::{f32::consts::PI, sync::Arc};
 
 /// Oscillator voice for sampler.
 pub struct OscillatorVoice {
