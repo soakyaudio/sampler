@@ -12,9 +12,12 @@ fn main() {
     }
     sampler.add_sound(OscillatorSound::new());
 
+    let _file = processing::AudioFileSound::from_wav("sample.wav").unwrap();
+    println!("{}", _file.duration_samples());
+
     let (processor, proxy) = engine::CpalProcessor::new(Box::new(sampler));
     let _audio_engine = engine::CpalAudioEngine::new(processor);
     let _midi_engine = engine::MidirMidiEngine::new(proxy);
 
-    std::thread::park();
+    // std::thread::park();
 }
