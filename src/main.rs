@@ -2,22 +2,19 @@ mod base;
 mod engine;
 mod processing;
 
-use processing::{Sampler, OscillatorSound, OscillatorVoice};
+use processing::{Sampler, AudioFileSound, AudioFileVoice};
 
 fn main() {
-    let mut sampler: Sampler<OscillatorSound, OscillatorVoice> = Sampler::new();
+    let mut sampler: Sampler<AudioFileSound, AudioFileVoice> = Sampler::new();
 
     for _ in 0..64 {
-        sampler.add_voice(OscillatorVoice::new());
+        sampler.add_voice(AudioFileVoice::new());
     }
-    sampler.add_sound(OscillatorSound::new());
-
-    let _file = processing::AudioFileSound::from_wav("sample.wav").unwrap();
-    println!("{}", _file.duration_samples());
+    sampler.add_sound(AudioFileSound::from_wav("sample.wav").unwrap());
 
     let (processor, proxy) = engine::CpalProcessor::new(Box::new(sampler));
     let _audio_engine = engine::CpalAudioEngine::new(processor);
     let _midi_engine = engine::MidirMidiEngine::new(proxy);
 
-    // std::thread::park();
+    std::thread::park();
 }

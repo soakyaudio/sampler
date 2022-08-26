@@ -50,7 +50,14 @@ impl SamplerVoice<AudioFileSound> for AudioFileVoice {
     fn render(&mut self, buffer: &mut [f32]) {
         if let Some(sound) = &self.active_sound {
             for frame in buffer.chunks_mut(2) { // Sampler expects stereo.
+                // Get sample.
                 let envelope_gain = self.adsr.next_sample();
+                let sample = sound.0.get_value(self.sample_position);
+                self.sample_position += 1.0;
+
+                // Mix sample into output buffer.
+                frame[0] += sample.0 * envelope_gain;
+                frame[1] += sample.1 * envelope_gain;
 
                 // Stop note after envelope finished release stage.
                 if !self.adsr.is_active() { self.stop_note(0.0, false); break; }

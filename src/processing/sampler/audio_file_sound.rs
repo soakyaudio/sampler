@@ -26,7 +26,6 @@ impl AudioFileSound {
                 reader.samples::<i32>().map(|s| s.unwrap() as f32 / normalization_factor).collect()
             },
         };
-        println!("{}", sample_buffer.len());
 
         // Create sound object.
         let sound = AudioFileSound {
@@ -37,15 +36,24 @@ impl AudioFileSound {
         Ok(sound)
     }
 
-    /// Returns stereo sample value at position (supports linear interpolation).
-    #[inline(always)]
-    pub fn get_value(&self, sample_position: f32) -> (f32, f32) {
-        (0.0, 0.0)
-    }
-
     /// Returns duration in samples.
     pub fn duration_samples(&self) -> usize {
         self.sample_buffer.len() / self.channel_count as usize
+    }
+
+    /// Returns stereo sample value at position (supports linear interpolation).
+    #[inline(always)]
+    pub fn get_value(&self, sample_position: f32) -> (f32, f32) {
+        let interleaved_index = sample_position as usize * self.channel_count as usize;
+        match self.channel_count {
+            1 => (self.sample_buffer[interleaved_index+0], self.sample_buffer[interleaved_index+0]),
+            _ => (self.sample_buffer[interleaved_index+0], self.sample_buffer[interleaved_index+1]), // Ignore other channels.
+        }
+    }
+
+    /// Returns file sample rate.
+    pub fn sample_rate(&self) -> f32 {
+        self.sample_rate
     }
 }
 impl SamplerSound for AudioFileSound {
