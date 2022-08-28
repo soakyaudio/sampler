@@ -50,7 +50,7 @@ There are few things that might fall apart on other systems, so any help with cr
 ### 0.1.0
 - [ ] Code style, rustfmt
 - [ ] Fix compiler warnings
-- [ ] Multiple velocities
+- [x] Multiple velocities
 - [ ] SFZ format
 - [ ] Unit tests
 - [ ] Voice stealing

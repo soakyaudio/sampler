@@ -15,7 +15,7 @@ impl OscillatorSound {
     }
 }
 impl SamplerSound for OscillatorSound {
-    fn applies_to_note(&self, _midi_note: u8) -> bool {
+    fn applies_to_note(&self, _midi_note: u8, _midi_velocity: u8) -> bool {
         true
     }
 }

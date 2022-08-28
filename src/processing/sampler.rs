@@ -88,18 +88,18 @@ impl<S: SamplerSound, V: SamplerVoice<S>> Sampler<S, V> {
     }
 
     /// Note on (usually triggered by a MIDI message).
-    fn note_on(&mut self, _midi_channel: u8, midi_note: u8, velocity: u8) {
+    fn note_on(&mut self, _midi_channel: u8, midi_note: u8, midi_velocity: u8) {
         // If hitting a note that's still ringing, stop it first (sustain pedal).
         self.voices.iter_mut()
             .filter(|voice| voice.get_active_note().map_or(false, |note| note == midi_note))
             .for_each(|voice| voice.stop_note(0.0, true));
 
-        // Find free voice.
-        let voice = self.voices.iter_mut().find(|voice| !voice.is_playing());
-        if let Some(voice) = voice {
-            // Find matching sound.
-            if let Some(sound) = self.sounds.iter().find(|sound| sound.applies_to_note(midi_note)) {
-                voice.start_note(midi_note, velocity as f32 / 127.0, sound.clone());
+        // Filter matching sounds.
+        for sound in self.sounds.iter().filter(|sound| sound.applies_to_note(midi_note, midi_velocity)) {
+            // Find free voice.
+            let voice = self.voices.iter_mut().find(|voice| !voice.is_playing());
+            if let Some(voice) = voice {
+                voice.start_note(midi_note, midi_velocity as f32 / 127.0, sound.clone());
                 voice.set_key_down(true);
             }
         }

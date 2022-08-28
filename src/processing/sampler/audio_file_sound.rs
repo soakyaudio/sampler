@@ -11,8 +11,8 @@ pub struct AudioFileSound {
     /// Duration in samples.
     pub duration_samples: usize,
 
-    /// Root midi note, lowest midi note, highest midi note.
-    pub midi_region: (u8, u8, u8),
+    /// Root midi note, lowest midi note, highest midi note, lowest velocity, highest velocity.
+    pub midi_region: (u8, u8, u8, u8, u8),
 
     /// Audio file sample buffer.
     sample_buffer: Box<[f32]>,
@@ -22,7 +22,7 @@ pub struct AudioFileSound {
 }
 impl AudioFileSound {
     /// Creates new audio file sound from WAV file.
-    pub fn from_wav(file_path: &str, midi_region: (u8, u8, u8), adsr: (f32, f32, f32, f32)) -> Result<Self, hound::Error> {
+    pub fn from_wav(file_path: &str, midi_region: (u8, u8, u8, u8, u8), adsr: (f32, f32, f32, f32)) -> Result<Self, hound::Error> {
         // Read WAV samples into memory (disk streaming is planned for later).
         let mut reader = hound::WavReader::open(file_path)?;
         let format = reader.spec();
@@ -75,7 +75,8 @@ impl AudioFileSound {
     }
 }
 impl SamplerSound for AudioFileSound {
-    fn applies_to_note(&self, midi_note: u8) -> bool {
+    fn applies_to_note(&self, midi_note: u8, midi_velocity: u8) -> bool {
         midi_note >= self.midi_region.1 && midi_note <= self.midi_region.2
+            && midi_velocity >= self.midi_region.3 && midi_velocity <= self.midi_region.4
     }
 }
