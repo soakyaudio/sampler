@@ -50,13 +50,14 @@ There are few things that might fall apart on other systems, so any help with cr
 ### 0.1.0
 - [ ] Fix compiler warnings
 - [ ] Multiple velocities
-- [ ] Round robin
 - [ ] Unit tests
 - [ ] Voice stealing
-- [ ] WAV samples
+- [x] WAV samples
+- [ ] SFZ format
 
 ### 0.2.0
-- [ ] SFZ format
+- [ ] Looped samples
+- [ ] Round robin
 
 ### 0.3.0
 - [ ] Disk streaming
@@ -73,6 +74,7 @@ There are few things that might fall apart on other systems, so any help with cr
 
 ## Third-Party Credits
 - [cpal](https://github.com/RustAudio/cpal) ([Apache 2.0](https://github.com/RustAudio/cpal/blob/1ac8f1549f41001acd0acef2be9214ab72e61d11/LICENSE)): Cross-platform audio I/O library in pure Rust.
+- [hound](https://github.com/ruuda/hound) ([Apache 2.0](https://github.com/ruuda/hound/blob/02e66effb33683dd6acb92df792683ee46ad6a59/license)): A wav encoding and decoding library in Rust.
 - [midir](https://github.com/Boddlnagg/midir/) ([MIT](https://github.com/Boddlnagg/midir/blob/c6aa24867aedee1e02284c5bb6062648f594632d/LICENSE)): Cross-platform realtime MIDI processing in Rust.
 - [ringbuf](https://github.com/agerasev/ringbuf) ([MIT](https://github.com/agerasev/ringbuf/blob/939b3338a2faf8d1d490eaa9eb50a8ae02136701/LICENSE-MIT)): Lock-free SPSC FIFO ring buffer with direct access to inner data.
 - And thanks to all the unmentioned thousands of contributers behind the amazing projects that keep this software running.

@@ -1,3 +1,5 @@
+mod audio_file_sound;
+mod audio_file_voice;
 mod linear_adsr;
 mod oscillator_sound;
 mod oscillator_voice;
@@ -5,6 +7,8 @@ mod sampler_sound;
 mod sampler_voice;
 
 use crate::base::{MidiMessage, AudioProcessor, Parameter, ParameterId, ParameterValue, MidiReceiver};
+pub use audio_file_sound::AudioFileSound;
+pub use audio_file_voice::AudioFileVoice;
 pub use linear_adsr::LinearAdsr;
 pub use oscillator_sound::OscillatorSound;
 pub use oscillator_voice::OscillatorVoice;
