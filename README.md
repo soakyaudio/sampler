@@ -50,13 +50,14 @@ There are few things that might fall apart on other systems, so any help with cr
 ### 0.1.0
 - [ ] Fix compiler warnings
 - [ ] Multiple velocities
-- [ ] Round robin
 - [ ] Unit tests
 - [ ] Voice stealing
-- [ ] WAV samples
+- [x] WAV samples
+- [ ] SFZ format
 
 ### 0.2.0
-- [ ] SFZ format
+- [ ] Looped samples
+- [ ] Round robin
 
 ### 0.3.0
 - [ ] Disk streaming

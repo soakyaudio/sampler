@@ -5,6 +5,9 @@ pub struct AudioFileSound {
     /// Channels in audio file / buffer.
     channel_count: u16,
 
+    /// Duration in samples.
+    duration_samples: usize,
+
     /// Root midi note, lowest midi note, highest midi note.
     midi_region: (u8, u8, u8),
 
@@ -30,9 +33,15 @@ impl AudioFileSound {
             },
         };
 
+        // Add padding for linear interpolation.
+        let duration_samples = sample_buffer.len() / format.channels as usize;
+        let padding: Box<[f32]> = vec![0.0; format.channels as usize].into_boxed_slice();
+        let sample_buffer = [sample_buffer, padding].concat().into_boxed_slice();
+
         // Create sound object.
         let sound = AudioFileSound {
             channel_count: format.channels,
+            duration_samples,
             midi_region,
             sample_buffer,
             sample_rate: format.sample_rate as f32,
@@ -42,7 +51,7 @@ impl AudioFileSound {
 
     /// Returns duration in samples.
     pub fn duration_samples(&self) -> usize {
-        self.sample_buffer.len() / self.channel_count as usize
+        self.duration_samples
     }
 
     /// Returns stereo sample value at position (via linear interpolation).

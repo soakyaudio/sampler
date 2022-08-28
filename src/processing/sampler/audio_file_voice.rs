@@ -57,11 +57,14 @@ impl SamplerVoice<AudioFileSound> for AudioFileVoice {
                 // Get sample.
                 let envelope_gain = self.adsr.next_sample();
                 let sample = sound.0.get_value(self.sample_position);
-                self.sample_position += self.position_increment;
 
                 // Mix sample into output buffer.
                 frame[0] += sample.0 * envelope_gain;
                 frame[1] += sample.1 * envelope_gain;
+
+                // Advance sample position, possibly stop note if reached end of sample.
+                self.sample_position += self.position_increment;
+                if self.sample_position > sound.0.duration_samples() as f32 { self.stop_note(0.0, false); break; }
 
                 // Stop note after envelope finished release stage.
                 if !self.adsr.is_active() { self.stop_note(0.0, false); break; }
@@ -86,7 +89,6 @@ impl SamplerVoice<AudioFileSound> for AudioFileVoice {
         self.position_increment =
             f32::powf(2.0, (midi_note as f32 - sound.midi_region().0 as f32) / 12.0)
             * (sound.sample_rate() / self.sample_rate);
-        println!("{}", self.position_increment);
         self.sample_position = 0.0;
         self.active_sound = Some((sound, midi_note));
     }
