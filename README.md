@@ -48,12 +48,13 @@ There are few things that might fall apart on other systems, so any help with cr
 
 ## Roadmap
 ### 0.1.0
+- [ ] Code style, rustfmt
 - [ ] Fix compiler warnings
 - [ ] Multiple velocities
+- [ ] SFZ format
 - [ ] Unit tests
 - [ ] Voice stealing
 - [x] WAV samples
-- [ ] SFZ format
 
 ### 0.2.0
 - [ ] Looped samples
