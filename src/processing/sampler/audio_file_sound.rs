@@ -28,7 +28,7 @@ impl AudioFileSound {
         let format = reader.spec();
         let sample_buffer: Box<[f32]> = match format.sample_format {
             hound::SampleFormat::Float => {
-                reader.samples().map(|s| s.unwrap()).collect()
+                reader.samples::<f32>().map(|s| s.unwrap()).collect()
             },
             hound::SampleFormat::Int => {
                 let normalization_factor = f32::powi(2.0, format.bits_per_sample as i32 - 1);
