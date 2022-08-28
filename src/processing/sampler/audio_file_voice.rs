@@ -15,6 +15,9 @@ pub struct AudioFileVoice {
     /// Key down state.
     key_down: bool,
 
+    /// Position increment, used for internal processing.
+    position_increment: f32,
+
     /// Audio file sample position, used for internal processing.
     sample_position: f32,
 
@@ -29,6 +32,7 @@ impl AudioFileVoice {
             adsr: LinearAdsr::new(0.03, 0.1),
             gain: 0.0,
             key_down: false,
+            position_increment: 0.0,
             sample_position: 0.0,
             sample_rate: 44100.0,
         }
@@ -53,7 +57,7 @@ impl SamplerVoice<AudioFileSound> for AudioFileVoice {
                 // Get sample.
                 let envelope_gain = self.adsr.next_sample();
                 let sample = sound.0.get_value(self.sample_position);
-                self.sample_position += 1.0;
+                self.sample_position += self.position_increment;
 
                 // Mix sample into output buffer.
                 frame[0] += sample.0 * envelope_gain;
@@ -77,10 +81,14 @@ impl SamplerVoice<AudioFileSound> for AudioFileVoice {
     }
 
     fn start_note(&mut self, midi_note: u8, velocity: f32, sound: Arc<AudioFileSound>) {
-        self.active_sound = Some((sound, midi_note));
         self.adsr.note_on();
         self.gain = velocity;
+        self.position_increment =
+            f32::powf(2.0, (midi_note as f32 - sound.midi_region().0 as f32) / 12.0)
+            * (sound.sample_rate() / self.sample_rate);
+        println!("{}", self.position_increment);
         self.sample_position = 0.0;
+        self.active_sound = Some((sound, midi_note));
     }
 
     fn stop_note(&mut self, _velocity: f32, allow_tail: bool) {

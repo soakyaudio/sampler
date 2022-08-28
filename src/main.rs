@@ -10,7 +10,7 @@ fn main() {
     for _ in 0..64 {
         sampler.add_voice(AudioFileVoice::new());
     }
-    sampler.add_sound(AudioFileSound::from_wav("sample.wav").unwrap());
+    sampler.add_sound(AudioFileSound::from_wav("sample.wav", (48, 48, 48)).unwrap());
 
     let (processor, proxy) = engine::CpalProcessor::new(Box::new(sampler));
     let _audio_engine = engine::CpalAudioEngine::new(processor);
