@@ -65,7 +65,7 @@ impl AudioFileSound {
         let interleaved_index_0 = (index+0) * self.channel_count as usize;
         let interleaved_index_1 = (index+1) * self.channel_count as usize;
 
-        // Mirror left channel if mono, ignore other channels.
+        // Mirror left channel if mono, ignore channels beyond stereo.
         let l = inv_alpha * self.sample_buffer[interleaved_index_0] + alpha * self.sample_buffer[interleaved_index_1];
         let r = match self.channel_count {
             1 => l,
@@ -75,7 +75,7 @@ impl AudioFileSound {
     }
 }
 impl SamplerSound for AudioFileSound {
-    fn applies_to_note(&self, _midi_note: u8) -> bool {
-        true
+    fn applies_to_note(&self, midi_note: u8) -> bool {
+        midi_note >= self.midi_region.1 && midi_note <= self.midi_region.2
     }
 }
