@@ -2,24 +2,27 @@ use super::SamplerSound;
 
 /// Audio file sound for sampler.
 pub struct AudioFileSound {
+    /// ADSR envelope in seconds.
+    pub adsr: (f32, f32, f32, f32),
+
     /// Channels in audio file / buffer.
     channel_count: u16,
 
     /// Duration in samples.
-    duration_samples: usize,
+    pub duration_samples: usize,
 
     /// Root midi note, lowest midi note, highest midi note.
-    midi_region: (u8, u8, u8),
+    pub midi_region: (u8, u8, u8),
 
     /// Audio file sample buffer.
     sample_buffer: Box<[f32]>,
 
     /// Audio file sample rate.
-    sample_rate: f32,
+    pub sample_rate: f32,
 }
 impl AudioFileSound {
     /// Creates new audio file sound from WAV file.
-    pub fn from_wav(file_path: &str, midi_region: (u8, u8, u8)) -> Result<Self, hound::Error> {
+    pub fn from_wav(file_path: &str, midi_region: (u8, u8, u8), adsr: (f32, f32, f32, f32)) -> Result<Self, hound::Error> {
         // Read WAV samples into memory (disk streaming is planned for later).
         let mut reader = hound::WavReader::open(file_path)?;
         let format = reader.spec();
@@ -40,6 +43,7 @@ impl AudioFileSound {
 
         // Create sound object.
         let sound = AudioFileSound {
+            adsr,
             channel_count: format.channels,
             duration_samples,
             midi_region,
@@ -47,11 +51,6 @@ impl AudioFileSound {
             sample_rate: format.sample_rate as f32,
         };
         Ok(sound)
-    }
-
-    /// Returns duration in samples.
-    pub fn duration_samples(&self) -> usize {
-        self.duration_samples
     }
 
     /// Returns stereo sample value at position (via linear interpolation).
@@ -73,16 +72,6 @@ impl AudioFileSound {
             _ => inv_alpha * self.sample_buffer[interleaved_index_0+1] + alpha * self.sample_buffer[interleaved_index_1+1],
         };
         (l, r)
-    }
-
-    /// Returns midi region (root, low, high).
-    pub fn midi_region(&self) -> (u8, u8, u8) {
-        self.midi_region
-    }
-
-    /// Returns file sample rate.
-    pub fn sample_rate(&self) -> f32 {
-        self.sample_rate
     }
 }
 impl SamplerSound for AudioFileSound {

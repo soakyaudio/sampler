@@ -1,5 +1,5 @@
 use super::{SamplerVoice, AudioFileSound, LinearAdsr};
-use std::{f32::consts::PI, sync::Arc};
+use std::sync::Arc;
 
 /// Audio file voice for sampler.
 pub struct AudioFileVoice {
@@ -29,7 +29,7 @@ impl AudioFileVoice {
     pub fn new() -> Self {
         AudioFileVoice {
             active_sound: None,
-            adsr: LinearAdsr::new(0.03, 0.1),
+            adsr: LinearAdsr::new(0.001, 0.1),
             gain: 0.0,
             key_down: false,
             position_increment: 0.0,
@@ -59,12 +59,12 @@ impl SamplerVoice<AudioFileSound> for AudioFileVoice {
                 let sample = sound.0.get_value(self.sample_position);
 
                 // Mix sample into output buffer.
-                frame[0] += sample.0 * envelope_gain;
-                frame[1] += sample.1 * envelope_gain;
+                frame[0] += sample.0 * envelope_gain * self.gain;
+                frame[1] += sample.1 * envelope_gain * self.gain;
 
                 // Advance sample position, possibly stop note if reached end of sample.
                 self.sample_position += self.position_increment;
-                if self.sample_position > sound.0.duration_samples() as f32 { self.stop_note(0.0, false); break; }
+                if self.sample_position > sound.0.duration_samples as f32 { self.stop_note(0.0, false); break; }
 
                 // Stop note after envelope finished release stage.
                 if !self.adsr.is_active() { self.stop_note(0.0, false); break; }
@@ -84,11 +84,12 @@ impl SamplerVoice<AudioFileSound> for AudioFileVoice {
     }
 
     fn start_note(&mut self, midi_note: u8, velocity: f32, sound: Arc<AudioFileSound>) {
+        self.adsr.set_parameters(sound.adsr.0, sound.adsr.3);
         self.adsr.note_on();
-        self.gain = velocity;
+        self.gain = velocity / 4.0; // TODO
         self.position_increment =
-            f32::powf(2.0, (midi_note as f32 - sound.midi_region().0 as f32) / 12.0)
-            * (sound.sample_rate() / self.sample_rate);
+            f32::powf(2.0, (midi_note as f32 - sound.midi_region.0 as f32) / 12.0)
+            * (sound.sample_rate / self.sample_rate);
         self.sample_position = 0.0;
         self.active_sound = Some((sound, midi_note));
     }
