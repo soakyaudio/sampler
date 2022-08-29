@@ -18,7 +18,7 @@ impl Parameter {
 }
 
 /// Process parameter value of specific type.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum ParameterValue {
     /// Float parameter value.
     Float(f32),

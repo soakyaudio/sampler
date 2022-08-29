@@ -127,3 +127,57 @@ enum ProcessorMessage {
     /// Updates a parameter.
     UpdateParameter(ParameterId, ParameterValue),
 }
+
+/// Unit tests.
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test::DummyProcessor;
+    use std::time::Duration;
+
+    #[test]
+    fn send_midi_to_source() {
+        let mut source = ProcessorProxySource::new(8);
+        let mut proxy = source.get_proxy();
+        let mut processor = DummyProcessor::new();
+        let midi_message = MidiMessage::NoteOn(0x01, 0x48, 0x21);
+
+        proxy.handle_midi_message(midi_message);
+        source.handle_messages(&mut processor);
+
+        assert_eq!(processor.midi_messages.len(), 1);
+        assert_eq!(processor.midi_messages[0], midi_message);
+    }
+
+    #[test]
+    fn send_parameter_to_proxies() {
+        let mut source = ProcessorProxySource::new(8);
+        let proxy1 = source.get_proxy();
+        let proxy2 = source.get_proxy();
+
+        source.update_parameter(0, ParameterValue::Float(1.2));
+        source.update_parameter(1, ParameterValue::Float(4.2));
+        source.notify_proxy();
+        std::thread::sleep(Duration::from_millis(16));
+
+        assert_eq!(proxy1.get_parameter(0), Some(ParameterValue::Float(1.2)));
+        assert_eq!(proxy2.get_parameter(1), Some(ParameterValue::Float(4.2)));
+    }
+
+    #[test]
+    fn send_parameter_to_source() {
+        let mut source = ProcessorProxySource::new(8);
+        let mut proxy1 = source.get_proxy();
+        let mut proxy2 = source.get_proxy();
+        let mut processor = DummyProcessor::new();
+        processor.set_parameter(0, ParameterValue::Float(0.0));
+        processor.set_parameter(1, ParameterValue::Float(0.0));
+
+        proxy1.set_parameter(0, ParameterValue::Float(1.2));
+        proxy2.set_parameter(1, ParameterValue::Float(4.2));
+        source.handle_messages(&mut processor);
+
+        assert_eq!(processor.get_parameter(0), Some(ParameterValue::Float(1.2)));
+        assert_eq!(processor.get_parameter(1), Some(ParameterValue::Float(4.2)));
+    }
+}

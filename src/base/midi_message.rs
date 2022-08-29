@@ -32,7 +32,19 @@ mod tests {
     use super::*;
 
     #[test]
-    fn from_bytes() {
+    fn from_bytes_invalid() {
+        let invalid_status = MidiMessage::from_bytes(&[0x01, 0x12, 0x36]);
+        assert_eq!(invalid_status, None);
+
+        let valid_status_invalid_length = MidiMessage::from_bytes(&[0x81, 0x48, 0x12, 0x01]);
+        assert_eq!(valid_status_invalid_length, None);
+
+        let invalid_length = MidiMessage::from_bytes(&[0x81]);
+        assert_eq!(invalid_length, None);
+    }
+
+    #[test]
+    fn from_bytes_valid() {
         let note_off = MidiMessage::from_bytes(&[0x81, 0x48, 0x12]);
         assert_eq!(note_off, Some(MidiMessage::NoteOff(0x01, 0x48, 0x12)));
 
@@ -41,14 +53,5 @@ mod tests {
 
         let control_change = MidiMessage::from_bytes(&[0xB3, 0x12, 0x36]);
         assert_eq!(control_change, Some(MidiMessage::ControlChange(0x03, 0x12, 0x36)));
-
-        let invalid = MidiMessage::from_bytes(&[0x01, 0x12, 0x36]);
-        assert_eq!(invalid, None);
-
-        let invalid = MidiMessage::from_bytes(&[0x81, 0x48, 0x12, 0x01]);
-        assert_eq!(invalid, None);
-
-        let invalid = MidiMessage::from_bytes(&[0x81]);
-        assert_eq!(invalid, None);
     }
 }

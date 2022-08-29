@@ -2,6 +2,9 @@ mod base;
 mod engine;
 mod processing;
 
+#[cfg(test)]
+mod test;
+
 use processing::{Sampler, AudioFileSound, AudioFileVoice};
 
 fn main() {
