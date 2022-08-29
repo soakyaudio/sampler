@@ -18,6 +18,9 @@ pub struct AudioFileVoice {
     /// Position increment, used for internal processing.
     position_increment: f32,
 
+    /// Voice priority.
+    priority: u32,
+
     /// Audio file sample position, used for internal processing.
     sample_position: f32,
 
@@ -33,6 +36,7 @@ impl AudioFileVoice {
             gain: 0.0,
             key_down: false,
             position_increment: 0.0,
+            priority: 0,
             sample_position: 0.0,
             sample_rate: 44100.0,
         }
@@ -41,6 +45,10 @@ impl AudioFileVoice {
 impl SamplerVoice<AudioFileSound> for AudioFileVoice {
     fn get_active_note(&self) -> Option<u8> {
         if let Some((_, note)) = self.active_sound { Some(note) } else { None }
+    }
+
+    fn get_priority(&self) -> u32 {
+        self.priority
     }
 
     fn is_key_down(&self) -> bool {
@@ -83,7 +91,7 @@ impl SamplerVoice<AudioFileSound> for AudioFileVoice {
         self.key_down = key_down;
     }
 
-    fn start_note(&mut self, midi_note: u8, velocity: f32, sound: Arc<AudioFileSound>) {
+    fn start_note(&mut self, midi_note: u8, velocity: f32, sound: Arc<AudioFileSound>, initial_priority: u32) {
         self.adsr.set_parameters(sound.adsr.0, sound.adsr.3);
         self.adsr.note_on();
         self.gain = velocity / 4.0; // TODO
@@ -92,6 +100,7 @@ impl SamplerVoice<AudioFileSound> for AudioFileVoice {
             * (sound.sample_rate / self.sample_rate);
         self.sample_position = 0.0;
         self.active_sound = Some((sound, midi_note));
+        self.priority = initial_priority;
     }
 
     fn stop_note(&mut self, _velocity: f32, allow_tail: bool) {

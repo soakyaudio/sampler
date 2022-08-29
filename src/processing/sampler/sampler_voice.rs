@@ -7,6 +7,9 @@ pub trait SamplerVoice<Sound: SamplerSound>: Send {
     /// Returns current MIDI note if playing, [None] otherwise.
     fn get_active_note(&self) -> Option<u8>;
 
+    // Returns voice priority (used for voice stealing, voices with lower priority are stolen first).
+    fn get_priority(&self) -> u32;
+
     /// Returns key down state.
     fn is_key_down(&self) -> bool;
 
@@ -23,7 +26,7 @@ pub trait SamplerVoice<Sound: SamplerSound>: Send {
     fn set_key_down(&mut self, key_down: bool);
 
     /// Plays a note on this voice.
-    fn start_note(&mut self, midi_note: u8, velocity: f32, sound: Arc<Sound>);
+    fn start_note(&mut self, midi_note: u8, velocity: f32, sound: Arc<Sound>, initial_priority: u32);
 
     /// Stops note.
     fn stop_note(&mut self, velocity: f32, allow_tail: bool);

@@ -48,6 +48,10 @@ impl SamplerVoice<OscillatorSound> for OscillatorVoice {
         if let Some((_, note)) = self.active_sound { Some(note) } else { None }
     }
 
+    fn get_priority(&self) -> u32 {
+        0
+    }
+
     fn is_key_down(&self) -> bool {
         self.key_down
     }
@@ -82,7 +86,7 @@ impl SamplerVoice<OscillatorSound> for OscillatorVoice {
         self.key_down = key_down;
     }
 
-    fn start_note(&mut self, midi_note: u8, velocity: f32, sound: Arc<OscillatorSound>) {
+    fn start_note(&mut self, midi_note: u8, velocity: f32, sound: Arc<OscillatorSound>, _initial_priority: u32) {
         let frequency = 440.0 * f32::powf(2.0, (midi_note as f32 - 69.0) / 12.0);
         self.active_sound = Some((sound, midi_note));
         self.adsr.note_on();

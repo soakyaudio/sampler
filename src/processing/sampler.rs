@@ -28,6 +28,9 @@ where
     /// Internal audio buffer (to mix stereo to mono).
     internal_buffer: Box<[f32]>,
 
+    /// Next voice priority.
+    next_voice_priority: u32,
+
     /// Sampler sounds.
     sounds: Vec<Arc<Sound>>,
 
@@ -43,6 +46,7 @@ impl<S: SamplerSound, V: SamplerVoice<S>> Sampler<S, V> {
         Sampler {
             channel_count: 0,
             internal_buffer: Box::new([]),
+            next_voice_priority: 0,
             sounds: Vec::new(),
             sustain_pedal_pressed: false,
             voices: Vec::new(),
@@ -89,6 +93,8 @@ impl<S: SamplerSound, V: SamplerVoice<S>> Sampler<S, V> {
 
     /// Note on (usually triggered by a MIDI message).
     fn note_on(&mut self, _midi_channel: u8, midi_note: u8, midi_velocity: u8) {
+        if self.sounds.len() == 0 || self.voices.len() == 0 { return }
+
         // If hitting a note that's still ringing, stop it first (sustain pedal).
         self.voices.iter_mut()
             .filter(|voice| voice.get_active_note().map_or(false, |note| note == midi_note))
@@ -96,12 +102,16 @@ impl<S: SamplerSound, V: SamplerVoice<S>> Sampler<S, V> {
 
         // Filter matching sounds.
         for sound in self.sounds.iter().filter(|sound| sound.applies_to_note(midi_note, midi_velocity)) {
-            // Find free voice.
-            let voice = self.voices.iter_mut().find(|voice| !voice.is_playing());
-            if let Some(voice) = voice {
-                voice.start_note(midi_note, midi_velocity as f32 / 127.0, sound.clone());
-                voice.set_key_down(true);
-            }
+            // Find free voice or steal voice based on priority.
+            let voice = {
+                if let Some(voice) = self.voices.iter_mut().find(|voice| !voice.is_playing()) { voice }
+                else { self.voices.iter_mut().min_by_key(|voice| voice.get_priority()).unwrap() }
+            };
+
+            // Start note on voice.
+            voice.start_note(midi_note, midi_velocity as f32 / 127.0, sound.clone(), self.next_voice_priority);
+            voice.set_key_down(true);
+            self.next_voice_priority = self.next_voice_priority.wrapping_add(1); // Newer note will be more important, ignore overflow for now.
         }
     }
 }

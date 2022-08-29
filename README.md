@@ -53,7 +53,7 @@ There are few things that might fall apart on other systems, so any help with cr
 - [x] Multiple velocities
 - [ ] SFZ format
 - [ ] Unit tests
-- [ ] Voice stealing
+- [x] Voice stealing
 - [x] WAV samples
 
 ### 0.2.0
