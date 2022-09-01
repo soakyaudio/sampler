@@ -62,3 +62,34 @@ impl MidiReceiver for CpalProcessor {
         self.processor.handle_midi_message(message);
     }
 }
+
+/// Unit tests.
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test::DummyProcessor;
+    use std::time::Duration;
+
+    #[test]
+    fn forward_parameter_to_processor() {
+        let wrapped = DummyProcessor::new();
+        let (mut processor, mut proxy) = CpalProcessor::new(Box::new(wrapped));
+
+        proxy.set_parameter(0, ParameterValue::Float(4.2));
+        processor.process(&mut []);
+
+        assert_eq!(processor.get_parameter(0), Some(ParameterValue::Float(4.2)));
+    }
+
+    #[test]
+    fn forward_parameter_to_proxy() {
+        let wrapped = DummyProcessor::new();
+        let (mut processor, proxy) = CpalProcessor::new(Box::new(wrapped));
+
+        processor.set_parameter(0, ParameterValue::Float(4.2));
+        processor.process(&mut []);
+        std::thread::sleep(Duration::from_millis(16));
+
+        assert_eq!(proxy.get_parameter(0), Some(ParameterValue::Float(4.2)));
+    }
+}

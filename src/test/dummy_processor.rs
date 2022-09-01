@@ -8,10 +8,13 @@ pub struct DummyProcessor {
 }
 impl DummyProcessor {
     pub fn new() -> DummyProcessor {
-        DummyProcessor {
+        let mut processor = DummyProcessor {
             midi_messages: Vec::new(),
             parameter: HashMap::new(),
-        }
+        };
+        processor.set_parameter(0, ParameterValue::Float(0.0));
+        processor.set_parameter(1, ParameterValue::Float(0.0));
+        processor
     }
 }
 impl AudioProcessor for DummyProcessor {
@@ -23,7 +26,7 @@ impl AudioProcessor for DummyProcessor {
         &PARAMS
     }
     fn process(&mut self, buffer: &mut [f32]) {
-        todo!()
+
     }
     fn reset(&mut self, sample_rate: f32, max_buffer_size: usize) {
         todo!()

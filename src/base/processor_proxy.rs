@@ -170,8 +170,6 @@ mod tests {
         let mut proxy1 = source.get_proxy();
         let mut proxy2 = source.get_proxy();
         let mut processor = DummyProcessor::new();
-        processor.set_parameter(0, ParameterValue::Float(0.0));
-        processor.set_parameter(1, ParameterValue::Float(0.0));
 
         proxy1.set_parameter(0, ParameterValue::Float(1.2));
         proxy2.set_parameter(1, ParameterValue::Float(4.2));
