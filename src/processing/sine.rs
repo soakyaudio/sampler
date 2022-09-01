@@ -106,3 +106,26 @@ impl MidiReceiver for Sine {
         }
     }
 }
+
+/// Unit tests.
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn render_sine() {
+        let mut buffer: Box<[f32]> = vec![0.0; 512].into_boxed_slice();
+        let mut sine = Sine::new();
+        sine.set_parameter(Sine::Amplitude.id, ParameterValue::Float(0.5));
+        sine.set_parameter(Sine::Frequency.id, ParameterValue::Float(100.0));
+        sine.set_channel_layout(0, 1);
+        sine.reset(100.0 * PI, 512);
+
+        sine.process(&mut buffer);
+
+        for i in 0..512 {
+            let value = f32::sin(2.0 * i as f32) * 0.5; // 2 * PI * frequency * i / sample_rate
+            assert!((buffer[i] - value).abs() < 1e-5, "Unexpected buffer value at index {}: got {} instead of {}", i, buffer[i], value);
+        }
+    }
+}
