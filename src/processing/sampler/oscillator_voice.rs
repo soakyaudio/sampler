@@ -103,3 +103,43 @@ impl SamplerVoice<OscillatorSound> for OscillatorVoice {
         }
     }
 }
+
+/// Unit tests.
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn play_note() {
+        let mut buffer: Box<[f32]> = vec![0.0; 512].into_boxed_slice();
+        let mut voice = OscillatorVoice::new();
+        let sound = OscillatorSound::new();
+        voice.reset(1000.0, 512);
+
+        voice.start_note(48, 1.0, Arc::new(sound), 0);
+        assert_eq!(voice.get_active_note(), Some(48));
+
+        voice.stop_note(0.0, true);
+        assert_eq!(voice.is_playing(), true); // allow tail
+
+        voice.render(&mut buffer);
+        assert_eq!(voice.is_playing(), false);
+    }
+
+    #[test]
+    fn render_sine() {
+        let mut buffer: Box<[f32]> = vec![0.0; 1024].into_boxed_slice();
+        let mut voice = OscillatorVoice::new();
+        let sound = OscillatorSound::new();
+        voice.reset(1000.0, buffer.len());
+
+        voice.start_note(69, 1.0, Arc::new(sound), 0); // note 69 = A4 = 440Hz
+        voice.render(&mut buffer);
+
+        for i in (128..buffer.len()).step_by(2) { // skip adsr attack, stereo voice
+            let value = f32::sin(2.0 * PI * 440.0 * (i/2) as f32 / 1000.0) * 0.1; // 2 * PI * frequency * i / sample_rate
+            assert!((buffer[i] - value).abs() < 1e-4, "Unexpected buffer value at index {}: got {} instead of {}", i, buffer[i], value);
+            assert_eq!(buffer[i], buffer[i+1]);
+        }
+    }
+}

@@ -19,3 +19,17 @@ impl SamplerSound for OscillatorSound {
         true
     }
 }
+
+/// Unit tests.
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn calculate_sine() {
+        let sound = OscillatorSound::new();
+        assert!((sound.get_value(1.0) - f32::sin(1.0)).abs() < 1e-16);
+        assert!((sound.get_value(2.0) - f32::sin(2.0)).abs() < 1e-16);
+        assert!((sound.get_value(3.0) - f32::sin(3.0)).abs() < 1e-16);
+    }
+}
