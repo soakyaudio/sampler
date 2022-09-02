@@ -127,7 +127,7 @@ mod tests {
     }
 
     #[test]
-    fn render_sine() {
+    fn render_sound() {
         let mut buffer: Box<[f32]> = vec![0.0; 1024].into_boxed_slice();
         let mut voice = OscillatorVoice::new();
         let sound = OscillatorSound::new();

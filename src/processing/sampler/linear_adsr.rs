@@ -90,3 +90,36 @@ enum AdsrStage {
     Attack,
     Release,
 }
+
+/// Unit tests.
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn attack() {
+        let mut adsr = LinearAdsr::new(0.1, 0.5);
+        let mut steps = 0;
+        adsr.reset(1000.0);
+
+        assert_eq!(adsr.next_sample(), 0.0);
+        adsr.note_on();
+        while adsr.next_sample() < 1.0 { steps += 1 }
+        assert_eq!(steps, 100);
+    }
+
+    #[test]
+    fn release() {
+        let mut adsr = LinearAdsr::new(0.001, 0.5);
+        let mut steps = 0;
+        adsr.reset(1000.0);
+        adsr.note_on();
+        adsr.next_sample();
+
+        assert_eq!(adsr.next_sample(), 1.0);
+        adsr.note_off();
+        while adsr.next_sample() > 0.0 { steps += 1 }
+        assert_eq!(steps, 500);
+        assert_eq!(adsr.is_active(), false);
+    }
+}
