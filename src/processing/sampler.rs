@@ -17,6 +17,7 @@ pub use sampler_voice::SamplerVoice;
 use std::sync::Arc;
 
 /// Sampler instrument processor.
+#[derive(Debug)]
 pub struct Sampler<Sound, Voice>
 where
     Sound: SamplerSound,
