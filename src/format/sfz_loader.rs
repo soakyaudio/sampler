@@ -31,6 +31,8 @@ impl SfzLoader {
             if let Ok(sound) = sound_builder.build() {
                 sampler.add_sound(sound);
             }
+
+            println!("added {:?}", region);
         }
 
         sampler
@@ -68,6 +70,11 @@ impl AudioFileSoundBuilder {
     /// Applies opcode to sound.
     fn apply(&mut self, opcode: &sofiza::Opcode) {
         match opcode {
+            sofiza::Opcode::hikey(note) => self.high_note = *note,
+            sofiza::Opcode::hivel(velocity) => self.high_velocity = *velocity,
+            sofiza::Opcode::lokey(note) => self.low_note = *note,
+            sofiza::Opcode::lovel(velocity) => self.low_velocity = *velocity,
+            sofiza::Opcode::pitch_keycenter(note) => self.root_note = *note,
             sofiza::Opcode::sample(path) => self.file_path = String::from(self.default_path.join(path).to_str().unwrap()),
             _ => (),
         }
