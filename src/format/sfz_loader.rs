@@ -1,5 +1,5 @@
 use crate::processing::{Sampler, AudioFileSound, AudioFileVoice};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// Loader for SFZ-based samplers.
 pub struct SfzLoader {}
@@ -18,7 +18,7 @@ impl SfzLoader {
 
         // Add sounds.
         for region in instrument.regions {
-            let mut sound_builder = AudioFileSoundBuilder::new();
+            let mut sound_builder = AudioFileSoundBuilder::new(instrument.default_path.clone());
 
             // Apply opcodes according to precedence.
             instrument.global.values().for_each(|opcode| sound_builder.apply(opcode));
@@ -26,7 +26,6 @@ impl SfzLoader {
                 instrument.groups[group].opcodes.values().for_each(|opcode| sound_builder.apply(opcode));
             }
             region.opcodes.values().for_each(|opcode| sound_builder.apply(opcode));
-            println!("{:?}", region.opcodes);
 
             // Add if valid.
             if let Ok(sound) = sound_builder.build() {
@@ -34,7 +33,6 @@ impl SfzLoader {
             }
         }
 
-        println!("{:#?}", sampler);
         sampler
     }
 }
@@ -42,6 +40,7 @@ impl SfzLoader {
 /// Audio file sound builder.
 struct AudioFileSoundBuilder {
     attack: f32,
+    default_path: PathBuf,
     file_path: String,
     high_note: u8,
     high_velocity: u8,
@@ -52,9 +51,10 @@ struct AudioFileSoundBuilder {
 }
 impl AudioFileSoundBuilder {
     /// Creates new sound builder.
-    fn new() -> AudioFileSoundBuilder {
+    fn new(default_path: PathBuf) -> AudioFileSoundBuilder {
         AudioFileSoundBuilder {
             attack: 0.001,
+            default_path,
             file_path: String::from(""),
             high_note: 127,
             high_velocity: 127,
@@ -68,7 +68,7 @@ impl AudioFileSoundBuilder {
     /// Applies opcode to sound.
     fn apply(&mut self, opcode: &sofiza::Opcode) {
         match opcode {
-            sofiza::Opcode::sample(path) => self.file_path = String::from(path.to_str().unwrap()),
+            sofiza::Opcode::sample(path) => self.file_path = String::from(self.default_path.join(path).to_str().unwrap()),
             _ => (),
         }
     }

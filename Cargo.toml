@@ -16,3 +16,6 @@ hound = "3.4.0"
 midir = "0.8.0"
 ringbuf = "0.2.8"
 sofiza = "0.2.3"
+
+[patch.crates-io]
+sofiza = { path = "/Users/deermichel/Desktop/sofiza" }
