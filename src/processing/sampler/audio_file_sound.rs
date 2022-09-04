@@ -80,3 +80,54 @@ impl SamplerSound for AudioFileSound {
             && midi_velocity >= self.midi_region.3 && midi_velocity <= self.midi_region.4
     }
 }
+
+/// Unit tests.
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::{path::PathBuf, f32::consts::PI};
+
+    #[test]
+    fn applies_to_note() {
+        let test_file = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/test/test_sine.wav").to_str().unwrap().to_string();
+        let sound = AudioFileSound::from_wav(&test_file, (48, 40, 50, 18, 120), (0.02, 0.0, 0.0, 0.3)).unwrap();
+        assert_eq!(sound.applies_to_note(40, 40), true);
+        assert_eq!(sound.applies_to_note(51, 40), false);
+        assert_eq!(sound.applies_to_note(48, 18), true);
+        assert_eq!(sound.applies_to_note(48, 121), false);
+    }
+
+    #[test]
+    fn returns_samples() {
+        let test_file = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/test/test_sine.wav").to_str().unwrap().to_string();
+        let sound = AudioFileSound::from_wav(&test_file, (48, 40, 50, 18, 120), (0.02, 0.0, 0.0, 0.3)).unwrap();
+
+        for i in 0..512 {
+            let l_expected = f32::sin(2.0 * PI * 480.0 * i as f32 / sound.sample_rate);
+            let r_expected = f32::sin(2.0 * PI * 240.0 * i as f32 / sound.sample_rate);
+            let value = sound.get_value(i as f32);
+            assert!((value.0 - l_expected).abs() < 1e-3, "Unexpected left sample value at index {}: got {} instead of {}", i, value.0, l_expected);
+            assert!((value.1 - r_expected).abs() < 1e-3, "Unexpected right sample value at index {}: got {} instead of {}", i, value.1, r_expected);
+        }
+    }
+
+    #[test]
+    fn interpolates_samples() {
+        let test_file = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/test/test_sine.wav").to_str().unwrap().to_string();
+        let sound = AudioFileSound::from_wav(&test_file, (48, 40, 50, 18, 120), (0.02, 0.0, 0.0, 0.3)).unwrap();
+
+        let value_10 = sound.get_value(10.0);
+        let value_11 = sound.get_value(11.0);
+        let value_10_8 = sound.get_value(10.8);
+        let expected = (0.2 * value_10.0 + 0.8 * value_11.0,  0.2 * value_10.1 + 0.8 * value_11.1);
+        assert!((value_10_8.0 - expected.0).abs() < 1e-16);
+        assert!((value_10_8.1 - expected.1).abs() < 1e-16);
+
+        // Edge case at end of file to check for correct padding.
+        let last_value = sound.get_value((sound.duration_samples - 1) as f32);
+        let last_value_4 = sound.get_value((sound.duration_samples - 1) as f32 + 0.4);
+        let expected = (0.6 * last_value.0,  0.6 * last_value.1);
+        assert!((last_value_4.0 - expected.0).abs() < 1e-16);
+        assert!((last_value_4.1 - expected.1).abs() < 1e-16);
+    }
+}
