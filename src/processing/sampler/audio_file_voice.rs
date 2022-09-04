@@ -111,3 +111,46 @@ impl SamplerVoice<AudioFileSound> for AudioFileVoice {
         }
     }
 }
+
+/// Unit tests.
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    #[test]
+    fn play_note() {
+        let mut buffer: Box<[f32]> = vec![0.0; 512].into_boxed_slice();
+        let mut voice = AudioFileVoice::new();
+        let test_file = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/test/test_sine.wav").to_str().unwrap().to_string();
+        let sound = AudioFileSound::from_wav(&test_file, (48, 40, 50, 18, 120), (0.001, 0.0, 0.0, 0.1)).unwrap();
+        voice.reset(1000.0, 512);
+
+        voice.start_note(48, 1.0, Arc::new(sound), 0);
+        assert_eq!(voice.get_active_note(), Some(48));
+
+        voice.stop_note(0.0, true);
+        assert_eq!(voice.is_playing(), true); // Allow tail.
+
+        voice.render(&mut buffer);
+        assert_eq!(voice.is_playing(), false);
+    }
+
+    #[test]
+    fn render_sound() {
+        let mut buffer: Box<[f32]> = vec![0.0; 2048].into_boxed_slice();
+        let mut voice = AudioFileVoice::new();
+        let test_file = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/test/test_sine.wav").to_str().unwrap().to_string();
+        let sound = Arc::new(AudioFileSound::from_wav(&test_file, (48, 40, 60, 18, 120), (0.001, 0.0, 0.0, 0.1)).unwrap());
+        voice.reset(sound.sample_rate * 2.0, buffer.len()); // Double sample rate -> 0.5x play rate.
+
+        voice.start_note(60, 1.0, sound.clone(), 0); // One octave higher than root -> 2x play rate.
+        voice.render(&mut buffer);
+
+        for i in (256..buffer.len()).step_by(2) { // Skip adsr attack, stereo voice.
+            let value = sound.get_value((i / 2) as f32);
+            assert!((buffer[i+0] - value.0 / 4.0).abs() < 1e-16, "Unexpected (left) buffer value at index {}: got {} instead of {}", i+0, buffer[i+0], value.0);
+            assert!((buffer[i+1] - value.1 / 4.0).abs() < 1e-16, "Unexpected (right) buffer value at index {}: got {} instead of {}", i+1, buffer[i+1], value.1);
+        }
+    }
+}
