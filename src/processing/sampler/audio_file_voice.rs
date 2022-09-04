@@ -1,4 +1,4 @@
-use super::{SamplerVoice, AudioFileSound, LinearAdsr};
+use super::{AudioFileSound, LinearAdsr, SamplerVoice};
 use std::sync::Arc;
 
 /// Audio file voice for sampler.
@@ -44,7 +44,11 @@ impl AudioFileVoice {
 }
 impl SamplerVoice<AudioFileSound> for AudioFileVoice {
     fn get_active_note(&self) -> Option<u8> {
-        if let Some((_, note)) = self.active_sound { Some(note) } else { None }
+        if let Some((_, note)) = self.active_sound {
+            Some(note)
+        } else {
+            None
+        }
     }
 
     fn get_priority(&self) -> u32 {
@@ -61,7 +65,8 @@ impl SamplerVoice<AudioFileSound> for AudioFileVoice {
 
     fn render(&mut self, buffer: &mut [f32]) {
         if let Some(sound) = &self.active_sound {
-            for frame in buffer.chunks_mut(2) { // Sampler expects stereo.
+            // Sampler expects stereo.
+            for frame in buffer.chunks_mut(2) {
                 // Get sample.
                 let envelope_gain = self.adsr.next_sample();
                 let sample = sound.0.get_value(self.sample_position);
@@ -72,10 +77,16 @@ impl SamplerVoice<AudioFileSound> for AudioFileVoice {
 
                 // Advance sample position, possibly stop note if reached end of sample.
                 self.sample_position += self.position_increment;
-                if self.sample_position > sound.0.duration_samples as f32 { self.stop_note(0.0, false); break; }
+                if self.sample_position > sound.0.duration_samples as f32 {
+                    self.stop_note(0.0, false);
+                    break;
+                }
 
                 // Stop note after envelope finished release stage.
-                if !self.adsr.is_active() { self.stop_note(0.0, false); break; }
+                if !self.adsr.is_active() {
+                    self.stop_note(0.0, false);
+                    break;
+                }
             }
         }
     }
@@ -95,8 +106,7 @@ impl SamplerVoice<AudioFileSound> for AudioFileVoice {
         self.adsr.set_parameters(sound.adsr.0, sound.adsr.3);
         self.adsr.note_on();
         self.gain = velocity / 4.0; // TODO
-        self.position_increment =
-            f32::powf(2.0, (midi_note as f32 - sound.midi_region.0 as f32) / 12.0)
+        self.position_increment = f32::powf(2.0, (midi_note as f32 - sound.midi_region.0 as f32) / 12.0)
             * (sound.sample_rate / self.sample_rate);
         self.sample_position = 0.0;
         self.active_sound = Some((sound, midi_note));
@@ -122,7 +132,8 @@ mod tests {
     fn play_note() {
         let mut buffer: Box<[f32]> = vec![0.0; 512].into_boxed_slice();
         let mut voice = AudioFileVoice::new();
-        let test_file = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/test/test_sine.wav").to_str().unwrap().to_string();
+        let test_file =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/test/test_sine.wav").to_str().unwrap().to_string();
         let sound = AudioFileSound::from_wav(&test_file, (48, 40, 50, 18, 120), (0.001, 0.0, 0.0, 0.1)).unwrap();
         voice.reset(1000.0, 512);
 
@@ -140,17 +151,32 @@ mod tests {
     fn render_sound() {
         let mut buffer: Box<[f32]> = vec![0.0; 2048].into_boxed_slice();
         let mut voice = AudioFileVoice::new();
-        let test_file = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/test/test_sine.wav").to_str().unwrap().to_string();
-        let sound = Arc::new(AudioFileSound::from_wav(&test_file, (48, 40, 60, 18, 120), (0.001, 0.0, 0.0, 0.1)).unwrap());
+        let test_file =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/test/test_sine.wav").to_str().unwrap().to_string();
+        let sound =
+            Arc::new(AudioFileSound::from_wav(&test_file, (48, 40, 60, 18, 120), (0.001, 0.0, 0.0, 0.1)).unwrap());
         voice.reset(sound.sample_rate * 2.0, buffer.len()); // Double sample rate -> 0.5x play rate.
 
         voice.start_note(60, 1.0, sound.clone(), 0); // One octave higher than root -> 2x play rate.
         voice.render(&mut buffer);
 
-        for i in (256..buffer.len()).step_by(2) { // Skip adsr attack, stereo voice.
+        for i in (256..buffer.len()).step_by(2) {
+            // Skip adsr attack, stereo voice.
             let value = sound.get_value((i / 2) as f32);
-            assert!((buffer[i+0] - value.0 / 4.0).abs() < 1e-16, "Unexpected (left) buffer value at index {}: got {} instead of {}", i+0, buffer[i+0], value.0);
-            assert!((buffer[i+1] - value.1 / 4.0).abs() < 1e-16, "Unexpected (right) buffer value at index {}: got {} instead of {}", i+1, buffer[i+1], value.1);
+            assert!(
+                (buffer[i + 0] - value.0 / 4.0).abs() < 1e-16,
+                "Unexpected (left) buffer value at index {}: got {} instead of {}",
+                i + 0,
+                buffer[i + 0],
+                value.0
+            );
+            assert!(
+                (buffer[i + 1] - value.1 / 4.0).abs() < 1e-16,
+                "Unexpected (right) buffer value at index {}: got {} instead of {}",
+                i + 1,
+                buffer[i + 1],
+                value.1
+            );
         }
     }
 }

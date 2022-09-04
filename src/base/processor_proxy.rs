@@ -1,5 +1,8 @@
-use crate::base::{AudioProcessor, ParameterId, ParameterValue, MidiMessage, MidiReceiver};
-use std::{sync::{Arc, Mutex, RwLock}, collections::HashMap};
+use crate::base::{AudioProcessor, MidiMessage, MidiReceiver, ParameterId, ParameterValue};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex, RwLock},
+};
 
 /// Encapsulates communication with an audio processor that lives on the audio thread.
 pub struct ProcessorProxy {
@@ -12,7 +15,10 @@ pub struct ProcessorProxy {
 #[allow(dead_code)] // TODO: Remove.
 impl ProcessorProxy {
     /// Creates new processor proxy, returning message loop thread handle.
-    fn new(to_source: ringbuf::Producer<ProxyMessage>, from_source: ringbuf::Consumer<ProcessorMessage>) -> (Self, std::thread::JoinHandle<()>) {
+    fn new(
+        to_source: ringbuf::Producer<ProxyMessage>,
+        from_source: ringbuf::Consumer<ProcessorMessage>,
+    ) -> (Self, std::thread::JoinHandle<()>) {
         let to_source = Arc::new(Mutex::new(to_source));
         let parameter_map = Arc::new(RwLock::new(HashMap::new()));
         let proxy = ProcessorProxy { parameter_map, to_source };
@@ -23,7 +29,11 @@ impl ProcessorProxy {
     /// Gets a parameter.
     pub fn get_parameter(&self, id: ParameterId) -> Option<ParameterValue> {
         let parameter_map = self.parameter_map.read().unwrap();
-        if let Some(value) = parameter_map.get(&id) { Some(*value) } else { None }
+        if let Some(value) = parameter_map.get(&id) {
+            Some(*value)
+        } else {
+            None
+        }
     }
 
     /// Sends a parameter change to processor.

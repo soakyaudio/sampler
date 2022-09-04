@@ -1,4 +1,4 @@
-use crate::base::{AudioProcessor, Parameter, ParameterId, ParameterValue, MidiReceiver, MidiMessage};
+use crate::base::{AudioProcessor, MidiMessage, MidiReceiver, Parameter, ParameterId, ParameterValue};
 use std::f32::consts::PI;
 
 /// Simple since wave oscillator for test purposes.
@@ -52,9 +52,13 @@ impl Sine {
 #[allow(irrefutable_let_patterns)] // TODO: Remove.
 impl AudioProcessor for Sine {
     fn get_parameter(&self, id: ParameterId) -> Option<ParameterValue> {
-        if id == Sine::Amplitude.id { Some(ParameterValue::Float(self.amplitude)) }
-        else if id == Sine::Frequency.id { Some(ParameterValue::Float(self.frequency)) }
-        else { None }
+        if id == Sine::Amplitude.id {
+            Some(ParameterValue::Float(self.amplitude))
+        } else if id == Sine::Frequency.id {
+            Some(ParameterValue::Float(self.frequency))
+        } else {
+            None
+        }
     }
 
     fn list_parameters(&self) -> &[Parameter] {
@@ -65,7 +69,9 @@ impl AudioProcessor for Sine {
         for frame in buffer.chunks_mut(self.channel_count as usize) {
             frame.fill(f32::sin(self.phase) * self.amplitude);
             self.phase += self.phase_increment;
-            while self.phase >= 2.0 * PI { self.phase -= 2.0 * PI }
+            while self.phase >= 2.0 * PI {
+                self.phase -= 2.0 * PI
+            }
         }
     }
 
@@ -85,8 +91,7 @@ impl AudioProcessor for Sine {
             if let ParameterValue::Float(value) = value {
                 self.amplitude = value.clamp(0.0, 1.0);
             }
-        }
-        else if id == Sine::Frequency.id {
+        } else if id == Sine::Frequency.id {
             if let ParameterValue::Float(value) = value {
                 self.frequency = value.clamp(20.0, self.sample_rate / 2.0);
                 self.update_phase_increment()
@@ -102,7 +107,7 @@ impl MidiReceiver for Sine {
                 self.amplitude = velocity as f32 / 127.0;
                 self.frequency = 440.0 * f32::powf(2.0, (note as f32 - 69.0) / 12.0);
                 self.update_phase_increment();
-            },
+            }
             _ => (),
         }
     }
@@ -126,7 +131,13 @@ mod tests {
 
         for i in 0..512 {
             let value = f32::sin(2.0 * i as f32) * 0.5; // 2 * PI * frequency * i / sample_rate
-            assert!((buffer[i] - value).abs() < 1e-5, "Unexpected buffer value at index {}: got {} instead of {}", i, buffer[i], value);
+            assert!(
+                (buffer[i] - value).abs() < 1e-5,
+                "Unexpected buffer value at index {}: got {} instead of {}",
+                i,
+                buffer[i],
+                value
+            );
         }
     }
 }

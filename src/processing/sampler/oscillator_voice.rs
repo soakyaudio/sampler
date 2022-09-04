@@ -1,4 +1,4 @@
-use super::{SamplerVoice, OscillatorSound, LinearAdsr};
+use super::{LinearAdsr, OscillatorSound, SamplerVoice};
 use std::{f32::consts::PI, sync::Arc};
 
 /// Oscillator voice for sampler.
@@ -46,7 +46,11 @@ impl OscillatorVoice {
 }
 impl SamplerVoice<OscillatorSound> for OscillatorVoice {
     fn get_active_note(&self) -> Option<u8> {
-        if let Some((_, note)) = self.active_sound { Some(note) } else { None }
+        if let Some((_, note)) = self.active_sound {
+            Some(note)
+        } else {
+            None
+        }
     }
 
     fn get_priority(&self) -> u32 {
@@ -63,15 +67,21 @@ impl SamplerVoice<OscillatorSound> for OscillatorVoice {
 
     fn render(&mut self, buffer: &mut [f32]) {
         if let Some(sound) = &self.active_sound {
-            for frame in buffer.chunks_mut(2) { // Sampler expects stereo.
+            // Sampler expects stereo.
+            for frame in buffer.chunks_mut(2) {
                 let envelope_gain = self.adsr.next_sample();
                 let sample = sound.0.get_value(self.phase) * self.gain * envelope_gain * 0.1; // TODO
                 frame.iter_mut().for_each(|s| *s += sample);
                 self.phase += self.phase_increment;
-                while self.phase >= 2.0 * PI { self.phase -= 2.0 * PI }
+                while self.phase >= 2.0 * PI {
+                    self.phase -= 2.0 * PI
+                }
 
                 // Stop note after envelope finished release stage.
-                if !self.adsr.is_active() { self.stop_note(0.0, false); break; }
+                if !self.adsr.is_active() {
+                    self.stop_note(0.0, false);
+                    break;
+                }
             }
         }
     }
@@ -134,13 +144,20 @@ mod tests {
         let sound = OscillatorSound::new();
         voice.reset(1000.0, buffer.len());
 
-        voice.start_note(69, 1.0, Arc::new(sound), 0); // note 69 = A4 = 440Hz
+        voice.start_note(69, 1.0, Arc::new(sound), 0); // Note 69 = A4 = 440Hz
         voice.render(&mut buffer);
 
-        for i in (128..buffer.len()).step_by(2) { // skip adsr attack, stereo voice
-            let value = f32::sin(2.0 * PI * 440.0 * (i/2) as f32 / 1000.0) * 0.1; // 2 * PI * frequency * i / sample_rate
-            assert!((buffer[i] - value).abs() < 1e-4, "Unexpected buffer value at index {}: got {} instead of {}", i, buffer[i], value);
-            assert_eq!(buffer[i], buffer[i+1]);
+        // Skip adsr attack, stereo voice.
+        for i in (128..buffer.len()).step_by(2) {
+            let value = f32::sin(2.0 * PI * 440.0 * (i / 2) as f32 / 1000.0) * 0.1; // 2 * PI * frequency * i / sample_rate
+            assert!(
+                (buffer[i] - value).abs() < 1e-4,
+                "Unexpected buffer value at index {}: got {} instead of {}",
+                i,
+                buffer[i],
+                value
+            );
+            assert_eq!(buffer[i], buffer[i + 1]);
         }
     }
 }

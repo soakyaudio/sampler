@@ -6,7 +6,7 @@ mod oscillator_voice;
 mod sampler_sound;
 mod sampler_voice;
 
-use crate::base::{MidiMessage, AudioProcessor, Parameter, ParameterId, ParameterValue, MidiReceiver};
+use crate::base::{AudioProcessor, MidiMessage, MidiReceiver, Parameter, ParameterId, ParameterValue};
 pub use audio_file_sound::AudioFileSound;
 pub use audio_file_voice::AudioFileVoice;
 pub use linear_adsr::LinearAdsr;
@@ -14,7 +14,7 @@ pub use oscillator_sound::OscillatorSound;
 pub use oscillator_voice::OscillatorVoice;
 pub use sampler_sound::SamplerSound;
 pub use sampler_voice::SamplerVoice;
-use std::{sync::Arc};
+use std::sync::Arc;
 
 /// Sampler instrument processor.
 pub struct Sampler<Sound, Voice>
@@ -65,15 +65,15 @@ impl<S: SamplerSound, V: SamplerVoice<S>> Sampler<S, V> {
 
     /// All notes off (usually triggered by a MIDI message).
     fn all_notes_off(&mut self, allow_tail: bool) {
-        self.voices.iter_mut()
-            .for_each(|voice| voice.stop_note(0.0, allow_tail));
+        self.voices.iter_mut().for_each(|voice| voice.stop_note(0.0, allow_tail));
     }
 
     /// Handles sustain pedal (usually triggered by a MIDI message).
     fn sustain_pedal(&mut self, pressed: bool) {
         self.sustain_pedal_pressed = pressed;
         if !pressed {
-            self.voices.iter_mut()
+            self.voices
+                .iter_mut()
                 .filter(|voice| voice.is_playing() && !voice.is_key_down())
                 .for_each(|voice| voice.stop_note(0.0, true));
         }
@@ -81,22 +81,23 @@ impl<S: SamplerSound, V: SamplerVoice<S>> Sampler<S, V> {
 
     /// Note off (usually triggered by a MIDI message).
     fn note_off(&mut self, _midi_channel: u8, midi_note: u8, velocity: u8) {
-        self.voices.iter_mut()
-            .filter(|voice| voice.get_active_note() == Some(midi_note))
-            .for_each(|voice| {
-                voice.set_key_down(false);
-                if !self.sustain_pedal_pressed {
-                    voice.stop_note(velocity as f32 / 127.0, true);
-                }
-            });
+        self.voices.iter_mut().filter(|voice| voice.get_active_note() == Some(midi_note)).for_each(|voice| {
+            voice.set_key_down(false);
+            if !self.sustain_pedal_pressed {
+                voice.stop_note(velocity as f32 / 127.0, true);
+            }
+        });
     }
 
     /// Note on (usually triggered by a MIDI message).
     fn note_on(&mut self, _midi_channel: u8, midi_note: u8, midi_velocity: u8) {
-        if self.sounds.len() == 0 || self.voices.len() == 0 { return }
+        if self.sounds.len() == 0 || self.voices.len() == 0 {
+            return;
+        }
 
         // If hitting a note that's still ringing, stop it first (sustain pedal).
-        self.voices.iter_mut()
+        self.voices
+            .iter_mut()
             .filter(|voice| voice.get_active_note().map_or(false, |note| note == midi_note))
             .for_each(|voice| voice.stop_note(0.0, true));
 
@@ -104,14 +105,18 @@ impl<S: SamplerSound, V: SamplerVoice<S>> Sampler<S, V> {
         for sound in self.sounds.iter().filter(|sound| sound.applies_to_note(midi_note, midi_velocity)) {
             // Find free voice or steal voice based on priority.
             let voice = {
-                if let Some(voice) = self.voices.iter_mut().find(|voice| !voice.is_playing()) { voice }
-                else { self.voices.iter_mut().min_by_key(|voice| voice.get_priority()).unwrap() }
+                if let Some(voice) = self.voices.iter_mut().find(|voice| !voice.is_playing()) {
+                    voice
+                } else {
+                    self.voices.iter_mut().min_by_key(|voice| voice.get_priority()).unwrap()
+                }
             };
 
             // Start note on voice.
             voice.start_note(midi_note, midi_velocity as f32 / 127.0, sound.clone(), self.next_voice_priority);
             voice.set_key_down(true);
-            self.next_voice_priority = self.next_voice_priority.wrapping_add(1); // Newer note will be more important, ignore overflow for now.
+            // Newer note will be more important, ignore overflow for now.
+            self.next_voice_priority = self.next_voice_priority.wrapping_add(1);
         }
     }
 }
@@ -127,7 +132,7 @@ impl<S: SamplerSound, V: SamplerVoice<S>> AudioProcessor for Sampler<S, V> {
     fn process(&mut self, out_buffer: &mut [f32]) {
         // Prepare internal buffer.
         let frame_count = out_buffer.len() / self.channel_count as usize;
-        let internal_buffer = &mut self.internal_buffer[0..2*frame_count]; // Stereo.
+        let internal_buffer = &mut self.internal_buffer[0..2 * frame_count]; // Stereo.
         internal_buffer.fill(0.0);
 
         // Render voices.
@@ -178,7 +183,7 @@ impl<S: SamplerSound, V: SamplerVoice<S>> MidiReceiver for Sampler<S, V> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test::{DummyVoice, DummySound};
+    use crate::test::{DummySound, DummyVoice};
 
     #[test]
     fn render_voices_mono() {
@@ -194,7 +199,7 @@ mod tests {
         sampler.process(&mut buffer);
 
         buffer.iter().for_each(|sample| {
-            let expected = 0.5 * (48.0/127.0 + 0.1);
+            let expected = 0.5 * (48.0 / 127.0 + 0.1);
             assert!((sample - expected).abs() < 1e-16);
         });
     }
@@ -214,7 +219,7 @@ mod tests {
         sampler.process(&mut buffer);
 
         buffer.chunks(2).for_each(|frame| {
-            assert!((frame[0] - (48.0+62.0)/127.0).abs() < 1e-16);
+            assert!((frame[0] - (48.0 + 62.0) / 127.0).abs() < 1e-16);
             assert!((frame[1] - 0.2).abs() < 1e-16);
         });
     }
@@ -238,7 +243,7 @@ mod tests {
         sampler.process(&mut buffer);
 
         buffer.chunks(2).for_each(|frame| {
-            assert!((frame[0] - (48.0+62.0)/127.0).abs() < 1e-16);
+            assert!((frame[0] - (48.0 + 62.0) / 127.0).abs() < 1e-16);
             assert!((frame[1] - 0.2).abs() < 1e-16);
         });
 
@@ -248,7 +253,7 @@ mod tests {
 
         // 48 is still on (key down).
         buffer.chunks(2).for_each(|frame| {
-            assert!((frame[0] - 48.0/127.0).abs() < 1e-16);
+            assert!((frame[0] - 48.0 / 127.0).abs() < 1e-16);
             assert!((frame[1] - 0.1).abs() < 1e-16);
         });
     }

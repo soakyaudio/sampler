@@ -1,4 +1,4 @@
-use crate::base::{Parameter, ParameterId, ParameterValue, MidiReceiver};
+use crate::base::{MidiReceiver, Parameter, ParameterId, ParameterValue};
 
 /// Defines a generic audio processor, e.g. an instrument or effect.
 pub trait AudioProcessor: Send + MidiReceiver {

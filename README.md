@@ -48,7 +48,7 @@ There are few things that might fall apart on other systems, so any help with cr
 
 ## Roadmap
 ### 0.1.0
-- [ ] Code style, rustfmt
+- [x] Code style, rustfmt
 - [x] Fix compiler warnings
 - [x] Multiple velocities
 - [ ] SFZ format

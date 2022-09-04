@@ -1,6 +1,6 @@
 use crate::base::{AudioEngine, AudioProcessor};
 use crate::engine::CpalProcessor;
-use cpal::traits::{HostTrait, DeviceTrait, StreamTrait};
+use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 
 /// Audio engine based on [cpal].
 pub struct CpalAudioEngine {
@@ -12,12 +12,8 @@ impl CpalAudioEngine {
     pub fn new(mut processor: CpalProcessor) -> Self {
         // Get default host, output device and config.
         let host = cpal::default_host();
-        let device = host
-            .default_output_device()
-            .expect("No output device available.");
-        let config = device
-            .default_output_config()
-            .expect("No default output stream config found.");
+        let device = host.default_output_device().expect("No output device available.");
+        let config = device.default_output_config().expect("No default output stream config found.");
 
         // Sorry, only f32 for now.
         if config.sample_format() != cpal::SampleFormat::F32 {
@@ -37,9 +33,7 @@ impl CpalAudioEngine {
         let stream = {
             let audio_fn = move |buffer: &mut [f32], _: &cpal::OutputCallbackInfo| processor.process(buffer);
             let err_fn = move |err| eprintln!("An error occurred on the output audio stream: {}", err);
-            device
-                .build_output_stream(&config, audio_fn, err_fn)
-                .expect("Failed to create output stream.")
+            device.build_output_stream(&config, audio_fn, err_fn).expect("Failed to create output stream.")
         };
         stream.play().expect("Failed to start output stream.");
 

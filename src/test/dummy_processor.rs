@@ -1,4 +1,4 @@
-use crate::base::{AudioProcessor, ParameterId, ParameterValue, Parameter, MidiReceiver, MidiMessage};
+use crate::base::{AudioProcessor, MidiMessage, MidiReceiver, Parameter, ParameterId, ParameterValue};
 use std::collections::HashMap;
 
 /// Dummy audio processor for testing purposes.
@@ -8,10 +8,7 @@ pub struct DummyProcessor {
 }
 impl DummyProcessor {
     pub fn new() -> DummyProcessor {
-        let mut processor = DummyProcessor {
-            midi_messages: Vec::new(),
-            parameter: HashMap::new(),
-        };
+        let mut processor = DummyProcessor { midi_messages: Vec::new(), parameter: HashMap::new() };
         processor.set_parameter(0, ParameterValue::Float(0.0));
         processor.set_parameter(1, ParameterValue::Float(0.0));
         processor

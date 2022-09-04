@@ -44,10 +44,13 @@ impl LinearAdsr {
             match stage {
                 AdsrStage::Attack => {
                     self.envelope_gain = (self.envelope_gain + self.attack_delta).min(1.0);
-                },
+                }
                 AdsrStage::Release => {
                     self.envelope_gain -= self.release_delta;
-                    if self.envelope_gain < 0.0 { self.envelope_gain = 0.0; self.stage = None; }
+                    if self.envelope_gain < 0.0 {
+                        self.envelope_gain = 0.0;
+                        self.stage = None;
+                    }
                 }
             };
         }
@@ -104,7 +107,9 @@ mod tests {
 
         assert_eq!(adsr.next_sample(), 0.0);
         adsr.note_on();
-        while adsr.next_sample() < 1.0 { steps += 1 }
+        while adsr.next_sample() < 1.0 {
+            steps += 1
+        }
         assert_eq!(steps, 100);
     }
 
@@ -118,7 +123,9 @@ mod tests {
 
         assert_eq!(adsr.next_sample(), 1.0);
         adsr.note_off();
-        while adsr.next_sample() > 0.0 { steps += 1 }
+        while adsr.next_sample() > 0.0 {
+            steps += 1
+        }
         assert_eq!(steps, 500);
         assert_eq!(adsr.is_active(), false);
     }

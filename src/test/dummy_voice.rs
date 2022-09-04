@@ -1,4 +1,4 @@
-use crate::processing::{SamplerVoice, SamplerSound};
+use crate::processing::{SamplerSound, SamplerVoice};
 
 /// Dummy sampler voice for testing purposes.
 pub struct DummyVoice {
@@ -7,10 +7,7 @@ pub struct DummyVoice {
 }
 impl DummyVoice {
     pub fn new() -> Self {
-        DummyVoice {
-            active_note: None,
-            key_down: false,
-        }
+        DummyVoice { active_note: None, key_down: false }
     }
 }
 impl SamplerVoice<DummySound> for DummyVoice {
@@ -28,7 +25,8 @@ impl SamplerVoice<DummySound> for DummyVoice {
     }
     fn render(&mut self, buffer: &mut [f32]) {
         if let Some(note) = self.active_note {
-            buffer.chunks_mut(2).for_each(|frame| { // Stereo.
+            // Stereo.
+            buffer.chunks_mut(2).for_each(|frame| {
                 frame[0] += note as f32 / 127.0;
                 frame[1] += 0.1;
             });
@@ -40,7 +38,7 @@ impl SamplerVoice<DummySound> for DummyVoice {
     fn set_key_down(&mut self, key_down: bool) {
         self.key_down = key_down
     }
-    fn start_note(&mut self, midi_note: u8, _velocity: f32, _sound: std::sync::Arc<DummySound>, _initial_priority: u32) {
+    fn start_note(&mut self, midi_note: u8, _velocity: f32, _sound: std::sync::Arc<DummySound>, _priority: u32) {
         self.active_note = Some(midi_note);
     }
     fn stop_note(&mut self, _velocity: f32, _allow_tail: bool) {
