@@ -173,3 +173,83 @@ impl<S: SamplerSound, V: SamplerVoice<S>> MidiReceiver for Sampler<S, V> {
         }
     }
 }
+
+/// Unit tests.
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test::{DummyVoice, DummySound};
+
+    #[test]
+    fn render_voices_mono() {
+        let mut buffer: Box<[f32]> = vec![0.0; 512].into_boxed_slice();
+        let mut sampler = Sampler::<DummySound, DummyVoice>::new();
+        sampler.add_sound(DummySound::new());
+        sampler.add_voice(DummyVoice::new());
+
+        sampler.set_channel_layout(0, 1);
+        sampler.reset(1000.0, buffer.len());
+        sampler.note_on(0, 62, 127);
+        sampler.note_on(0, 48, 127); // Test voice stealing.
+        sampler.process(&mut buffer);
+
+        buffer.iter().for_each(|sample| {
+            let expected = 0.5 * (48.0/127.0 + 0.1);
+            assert!((sample - expected).abs() < 1e-16);
+        });
+    }
+
+    #[test]
+    fn render_voices_stereo() {
+        let mut buffer: Box<[f32]> = vec![0.0; 512].into_boxed_slice();
+        let mut sampler = Sampler::<DummySound, DummyVoice>::new();
+        sampler.add_sound(DummySound::new());
+        sampler.add_voice(DummyVoice::new());
+        sampler.add_voice(DummyVoice::new());
+
+        sampler.set_channel_layout(0, 2);
+        sampler.reset(1000.0, buffer.len());
+        sampler.note_on(0, 62, 127);
+        sampler.note_on(0, 48, 127); // Test polyphony.
+        sampler.process(&mut buffer);
+
+        buffer.chunks(2).for_each(|frame| {
+            assert!((frame[0] - (48.0+62.0)/127.0).abs() < 1e-16);
+            assert!((frame[1] - 0.2).abs() < 1e-16);
+        });
+    }
+
+    #[test]
+    fn sustain_pedal() {
+        let mut buffer: Box<[f32]> = vec![0.0; 512].into_boxed_slice();
+        let mut sampler = Sampler::<DummySound, DummyVoice>::new();
+        sampler.add_sound(DummySound::new());
+        sampler.add_voice(DummyVoice::new());
+        sampler.add_voice(DummyVoice::new());
+        sampler.set_channel_layout(0, 2);
+        sampler.reset(1000.0, buffer.len());
+
+        sampler.note_on(0, 56, 127); // 56 on.
+        sampler.note_off(0, 56, 0); // 56 off.
+        sampler.note_on(0, 62, 127); // 62 on.
+        sampler.sustain_pedal(true);
+        sampler.note_on(0, 48, 127); // 48 on.
+        sampler.note_off(0, 62, 0); // 62 sustained.
+        sampler.process(&mut buffer);
+
+        buffer.chunks(2).for_each(|frame| {
+            assert!((frame[0] - (48.0+62.0)/127.0).abs() < 1e-16);
+            assert!((frame[1] - 0.2).abs() < 1e-16);
+        });
+
+        sampler.sustain_pedal(false); // 62 off.
+        buffer.fill(0.0);
+        sampler.process(&mut buffer);
+
+        // 48 is still on (key down).
+        buffer.chunks(2).for_each(|frame| {
+            assert!((frame[0] - 48.0/127.0).abs() < 1e-16);
+            assert!((frame[1] - 0.1).abs() < 1e-16);
+        });
+    }
+}

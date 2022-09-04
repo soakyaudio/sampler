@@ -52,7 +52,7 @@ There are few things that might fall apart on other systems, so any help with cr
 - [ ] Fix compiler warnings
 - [x] Multiple velocities
 - [ ] SFZ format
-- [ ] Unit tests
+- [x] Unit tests
 - [x] Voice stealing
 - [x] WAV samples
 
