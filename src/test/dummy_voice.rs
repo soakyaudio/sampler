@@ -35,7 +35,7 @@ impl SamplerVoice<DummySound> for DummyVoice {
         }
     }
     fn reset(&mut self, _sample_rate: f32, _max_buffer_size: usize) {
-
+        return;
     }
     fn set_key_down(&mut self, key_down: bool) {
         self.key_down = key_down

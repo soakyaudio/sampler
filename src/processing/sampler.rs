@@ -116,8 +116,8 @@ impl<S: SamplerSound, V: SamplerVoice<S>> Sampler<S, V> {
     }
 }
 impl<S: SamplerSound, V: SamplerVoice<S>> AudioProcessor for Sampler<S, V> {
-    fn get_parameter(&self, id: ParameterId) -> Option<ParameterValue> {
-        todo!()
+    fn get_parameter(&self, _id: ParameterId) -> Option<ParameterValue> {
+        None
     }
 
     fn list_parameters(&self) -> &[Parameter] {
@@ -157,8 +157,8 @@ impl<S: SamplerSound, V: SamplerVoice<S>> AudioProcessor for Sampler<S, V> {
         self.channel_count = output_channels;
     }
 
-    fn set_parameter(&mut self, id: ParameterId, value: ParameterValue) {
-        todo!()
+    fn set_parameter(&mut self, _id: ParameterId, _value: ParameterValue) {
+        return;
     }
 }
 impl<S: SamplerSound, V: SamplerVoice<S>> MidiReceiver for Sampler<S, V> {

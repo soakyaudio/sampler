@@ -49,7 +49,7 @@ There are few things that might fall apart on other systems, so any help with cr
 ## Roadmap
 ### 0.1.0
 - [ ] Code style, rustfmt
-- [ ] Fix compiler warnings
+- [x] Fix compiler warnings
 - [x] Multiple velocities
 - [ ] SFZ format
 - [x] Unit tests

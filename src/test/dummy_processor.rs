@@ -25,14 +25,14 @@ impl AudioProcessor for DummyProcessor {
         const PARAMS: [Parameter; 2] = [Parameter::new(0, "param0"), Parameter::new(1, "param1")];
         &PARAMS
     }
-    fn process(&mut self, buffer: &mut [f32]) {
-
+    fn process(&mut self, _buffer: &mut [f32]) {
+        return;
     }
-    fn reset(&mut self, sample_rate: f32, max_buffer_size: usize) {
-        todo!()
+    fn reset(&mut self, _sample_rate: f32, _max_buffer_size: usize) {
+        return;
     }
-    fn set_channel_layout(&mut self, input_channels: u16, output_channels: u16) {
-        todo!()
+    fn set_channel_layout(&mut self, _input_channels: u16, _output_channels: u16) {
+        return;
     }
     fn set_parameter(&mut self, id: ParameterId, value: ParameterValue) {
         self.parameter.insert(id, value);

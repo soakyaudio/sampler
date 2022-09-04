@@ -4,6 +4,7 @@ use super::SamplerSound;
 pub struct OscillatorSound {}
 impl OscillatorSound {
     /// Creates new oscillator sound.
+    #[allow(dead_code)]
     pub fn new() -> Self {
         OscillatorSound {}
     }

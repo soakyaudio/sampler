@@ -9,6 +9,7 @@ pub struct ProcessorProxy {
     /// Channel to send messages to the processor.
     to_source: Arc<Mutex<ringbuf::Producer<ProxyMessage>>>,
 }
+#[allow(dead_code)] // TODO: Remove.
 impl ProcessorProxy {
     /// Creates new processor proxy, returning message loop thread handle.
     fn new(to_source: ringbuf::Producer<ProxyMessage>, from_source: ringbuf::Consumer<ProcessorMessage>) -> (Self, std::thread::JoinHandle<()>) {

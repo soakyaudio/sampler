@@ -30,6 +30,7 @@ impl Sine {
     pub const Frequency: Parameter = Parameter::new(1, "frequency");
 
     /// Creates a new sine processor with default parameters.
+    #[allow(dead_code)]
     pub fn new() -> Sine {
         let mut sine = Sine {
             amplitude: 0.2,

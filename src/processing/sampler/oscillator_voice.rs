@@ -26,6 +26,7 @@ pub struct OscillatorVoice {
 }
 impl OscillatorVoice {
     /// Creates new oscillator voice.
+    #[allow(dead_code)]
     pub fn new() -> Self {
         OscillatorVoice {
             active_sound: None,
