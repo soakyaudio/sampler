@@ -1,4 +1,4 @@
-use crate::processing::{Sampler, AudioFileSound, AudioFileVoice};
+use crate::processing::{AudioFileSound, AudioFileVoice, Sampler};
 use std::path::{Path, PathBuf};
 
 /// Loader for SFZ-based samplers.
@@ -7,8 +7,7 @@ impl SfzLoader {
     /// Creates sampler from SFZ file.
     pub fn from_file(path: &str) -> Sampler<AudioFileSound, AudioFileVoice> {
         // Parse file and create sampler.
-        let instrument = sofiza::Instrument::from_file(&Path::new(path))
-            .expect("Failed to load SFZ file.");
+        let instrument = sofiza::Instrument::from_file(&Path::new(path)).expect("Failed to load SFZ file.");
         let mut sampler = Sampler::new();
 
         // Add voices based on polyphony opcode (defaults to 64).
@@ -75,7 +74,9 @@ impl AudioFileSoundBuilder {
             sofiza::Opcode::lokey(note) => self.low_note = *note,
             sofiza::Opcode::lovel(velocity) => self.low_velocity = *velocity,
             sofiza::Opcode::pitch_keycenter(note) => self.root_note = *note,
-            sofiza::Opcode::sample(path) => self.file_path = String::from(self.default_path.join(path).to_str().unwrap()),
+            sofiza::Opcode::sample(path) => {
+                self.file_path = String::from(self.default_path.join(path).to_str().unwrap())
+            }
             _ => (),
         }
     }
@@ -86,7 +87,9 @@ impl AudioFileSoundBuilder {
             let midi_region = (self.root_note, self.low_note, self.high_note, self.low_velocity, self.high_velocity);
             let adsr = (self.attack, 0.0, 0.0, self.release);
             let sound = AudioFileSound::from_wav(&self.file_path, midi_region, adsr);
-            if sound.is_err() { eprintln!("Failed to load sample: {}", self.file_path); }
+            if sound.is_err() {
+                eprintln!("Failed to load sample: {}", self.file_path);
+            }
             sound.or(Err(()))
         } else {
             eprintln!("Unsupported audio file format: {}", self.file_path);
