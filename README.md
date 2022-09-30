@@ -42,12 +42,14 @@ There are few things that might fall apart on other systems, so any help with cr
 
 ## Features
 - Standalone wrapper app with real-time audio output & midi input
-- Polyphonic sine-wave instrument with linear ADSR envelope
+- Polyphonic sampler instrument with linear ADSR envelope
+- Multiple sample layers based on note and velocity
+- [SFZ](https://sfzformat.com/) format loader (see [supported opcodes](https://github.com/soakyaudio/sampler/blob/3a0b0506292f21d3ac78297805aa7d8efef38f54/src/format/sfz_loader.rs#L73))
 - [Here's some music](https://open.spotify.com/track/24LugbAAG8AIJGOLu52iOv?si=baf4c8c1f1fd498c) while you wait for more features...
 
 
 ## Roadmap
-### 0.1.0
+### v0.1.0
 - [x] Code style, rustfmt
 - [x] Fix compiler warnings
 - [x] Multiple velocities
@@ -56,15 +58,15 @@ There are few things that might fall apart on other systems, so any help with cr
 - [x] Voice stealing
 - [x] WAV samples
 
-### 0.2.0
+### v0.2.0
 - [ ] Looped samples
 - [ ] Round robin
 
-### 0.3.0
+### v0.3.0
 - [ ] Disk streaming
 - [ ] Filter per voice
 
-### 0.4.0
+### v0.4.0
 - [ ] AUv3 plugin wrapper
 
 ### Ideas
