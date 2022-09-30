@@ -69,6 +69,12 @@ impl<S: SamplerSound, V: SamplerVoice<S>> Sampler<S, V> {
         self.voices.iter_mut().for_each(|voice| voice.stop_note(0.0, allow_tail));
     }
 
+    /// Returns sounds.
+    #[allow(dead_code)]
+    pub fn get_sounds(&self) -> &Vec<Arc<S>> {
+        &self.sounds
+    }
+
     /// Handles sustain pedal (usually triggered by a MIDI message).
     fn sustain_pedal(&mut self, pressed: bool) {
         self.sustain_pedal_pressed = pressed;

@@ -99,3 +99,24 @@ impl AudioFileSoundBuilder {
         }
     }
 }
+
+/// Unit tests.
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn from_file() {
+        let test_file =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/test/test.sfz").to_str().unwrap().to_string();
+        let sampler = SfzLoader::from_file(&test_file);
+        let sounds = sampler.get_sounds();
+
+        assert_eq!(sounds.len(), 3);
+        assert_eq!(sounds[0].adsr, (0.003, 0.0, 0.0, 0.5));
+        assert_eq!(sounds[0].duration_samples, 48000);
+        assert_eq!(sounds[0].midi_region, (29, 24, 32, 1, 47));
+        assert_eq!(sounds[1].midi_region, (24, 34, 48, 48, 72));
+        assert_eq!(sounds[2].midi_region, (24, 49, 56, 48, 72));
+    }
+}
