@@ -10,8 +10,8 @@ impl SfzLoader {
         let instrument = sofiza::Instrument::from_file(&Path::new(path)).expect("Failed to load SFZ file.");
         let mut sampler = Sampler::new();
 
-        // Add voices based on polyphony opcode (defaults to 64).
-        for _ in 0..64 { // TODO
+        // TODO: Add voices based on polyphony opcode (defaults to 64).
+        for _ in 0..64 {
             sampler.add_voice(AudioFileVoice::new());
         }
 
@@ -31,7 +31,7 @@ impl SfzLoader {
                 sampler.add_sound(sound);
             }
 
-            println!("added {:?}", region); // TODO
+            println!("[SfzLoader] Added {:?}", region); // TODO: Remove.
         }
 
         sampler
@@ -69,7 +69,8 @@ impl AudioFileSoundBuilder {
     /// Applies opcode to sound.
     fn apply(&mut self, opcode: &sofiza::Opcode) {
         match opcode {
-            // TODO: attack & release
+            sofiza::Opcode::ampeg_attack(attack) => self.attack = *attack,
+            sofiza::Opcode::ampeg_release(release) => self.release = *release,
             sofiza::Opcode::hikey(note) => self.high_note = *note,
             sofiza::Opcode::hivel(velocity) => self.high_velocity = *velocity,
             sofiza::Opcode::lokey(note) => self.low_note = *note,
