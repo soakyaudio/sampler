@@ -6,16 +6,13 @@ license = "MIT"
 homepage = "https://soakyaudio.com/"
 repository = "https://github.com/soakyaudio/sampler"
 readme = "README.md"
-description = ""
+description = "Full-fledged software sampler written in Rust"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-cpal = "0.13.5"
-hound = "3.4.0"
+cpal = "0.14.0"
+hound = "3.5.0"
 midir = "0.8.0"
 ringbuf = "0.2.8"
-sofiza = "0.2.3"
-
-[patch.crates-io]
-sofiza = { path = "/Users/deermichel/Desktop/sofiza" }
+sofiza = "0.3.0"
