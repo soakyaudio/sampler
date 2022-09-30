@@ -17,6 +17,7 @@ pub use sampler_voice::SamplerVoice;
 use std::sync::Arc;
 
 /// Sampler instrument processor.
+#[derive(Debug)]
 pub struct Sampler<Sound, Voice>
 where
     Sound: SamplerSound,
@@ -66,6 +67,12 @@ impl<S: SamplerSound, V: SamplerVoice<S>> Sampler<S, V> {
     /// All notes off (usually triggered by a MIDI message).
     fn all_notes_off(&mut self, allow_tail: bool) {
         self.voices.iter_mut().for_each(|voice| voice.stop_note(0.0, allow_tail));
+    }
+
+    /// Returns sounds.
+    #[allow(dead_code)]
+    pub fn get_sounds(&self) -> &Vec<Arc<S>> {
+        &self.sounds
     }
 
     /// Handles sustain pedal (usually triggered by a MIDI message).

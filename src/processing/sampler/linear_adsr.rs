@@ -1,4 +1,5 @@
 /// Linear ADSR envelope.
+#[derive(Debug)]
 pub struct LinearAdsr {
     /// Attack in seconds. Valid range is 0.001s to 10.0s.
     attack: f32,
@@ -89,6 +90,7 @@ impl LinearAdsr {
 }
 
 /// ADSR stages.
+#[derive(Debug)]
 enum AdsrStage {
     Attack,
     Release,

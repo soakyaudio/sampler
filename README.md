@@ -51,7 +51,7 @@ There are few things that might fall apart on other systems, so any help with cr
 - [x] Code style, rustfmt
 - [x] Fix compiler warnings
 - [x] Multiple velocities
-- [ ] SFZ format
+- [x] SFZ format
 - [x] Unit tests
 - [x] Voice stealing
 - [x] WAV samples
@@ -78,6 +78,7 @@ There are few things that might fall apart on other systems, so any help with cr
 - [hound](https://github.com/ruuda/hound) ([Apache 2.0](https://github.com/ruuda/hound/blob/02e66effb33683dd6acb92df792683ee46ad6a59/license)): A wav encoding and decoding library in Rust.
 - [midir](https://github.com/Boddlnagg/midir/) ([MIT](https://github.com/Boddlnagg/midir/blob/c6aa24867aedee1e02284c5bb6062648f594632d/LICENSE)): Cross-platform realtime MIDI processing in Rust.
 - [ringbuf](https://github.com/agerasev/ringbuf) ([MIT](https://github.com/agerasev/ringbuf/blob/939b3338a2faf8d1d490eaa9eb50a8ae02136701/LICENSE-MIT)): Lock-free SPSC FIFO ring buffer with direct access to inner data.
+- [sofiza](https://github.com/andamira/sofiza) ([MIT](https://github.com/andamira/sofiza/blob/0d4ed41be0201839ef82fbc5f0702d1b2c394e18/LICENSE-MIT)): An SFZ format parser.
 - And thanks to all the unmentioned thousands of contributers behind the amazing projects that keep this software running.
 
 ## License

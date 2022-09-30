@@ -2,6 +2,7 @@ use super::{AudioFileSound, LinearAdsr, SamplerVoice};
 use std::sync::Arc;
 
 /// Audio file voice for sampler.
+#[derive(Debug)]
 pub struct AudioFileVoice {
     /// Sound and MIDI note that is currently playing.
     active_sound: Option<(Arc<AudioFileSound>, u8)>,

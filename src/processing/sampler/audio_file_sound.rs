@@ -1,6 +1,7 @@
 use super::SamplerSound;
 
 /// Audio file sound for sampler.
+#[derive(Debug)]
 pub struct AudioFileSound {
     /// ADSR envelope in seconds.
     pub adsr: (f32, f32, f32, f32),

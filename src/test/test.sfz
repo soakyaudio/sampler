@@ -1,0 +1,10 @@
+<global>
+ampeg_attack=0.003
+
+<group> lovel=1 hivel=47
+<region> sample=test_sine.wav
+lokey=C1  hikey=Ab1 pitch_keycenter=F1  ampeg_release=0.5
+
+<group> lovel=48 hivel=72
+<region> sample=test_sine.wav lokey=34  hikey=48 pitch_keycenter=C1
+<region> sample=test_sine.wav lokey=49  hikey=56 pitch_keycenter=C1
