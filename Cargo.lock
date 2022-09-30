@@ -777,10 +777,11 @@ checksum = "2fd0db749597d91ff862fd1d55ea87f7855a744a8425a64695b6fca237d1dad1"
 
 [[package]]
 name = "sofiza"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9fa97d411a57fb223a1675122d939edbd285fd54e08cc35b0a7d8c124b249d11"
+checksum = "2bbe187d99330e595f57123a082e254b8153ccd140b2ec187b7b4318aa471432"
 dependencies = [
+ "log",
  "logos",
  "never",
  "phf",
