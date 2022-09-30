@@ -11,7 +11,7 @@ impl SfzLoader {
         let mut sampler = Sampler::new();
 
         // Add voices based on polyphony opcode (defaults to 64).
-        for _ in 0..64 {
+        for _ in 0..64 { // TODO
             sampler.add_voice(AudioFileVoice::new());
         }
 
@@ -31,7 +31,7 @@ impl SfzLoader {
                 sampler.add_sound(sound);
             }
 
-            println!("added {:?}", region);
+            println!("added {:?}", region); // TODO
         }
 
         sampler
@@ -69,6 +69,7 @@ impl AudioFileSoundBuilder {
     /// Applies opcode to sound.
     fn apply(&mut self, opcode: &sofiza::Opcode) {
         match opcode {
+            // TODO: attack & release
             sofiza::Opcode::hikey(note) => self.high_note = *note,
             sofiza::Opcode::hivel(velocity) => self.high_velocity = *velocity,
             sofiza::Opcode::lokey(note) => self.low_note = *note,
