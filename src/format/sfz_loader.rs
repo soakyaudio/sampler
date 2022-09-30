@@ -31,7 +31,9 @@ impl SfzLoader {
                 sampler.add_sound(sound);
             }
 
-            println!("[SfzLoader] Added {:?}", region); // TODO: Remove.
+            // Debug logging.
+            #[cfg(debug_assertions)]
+            println!("[SfzLoader] Added {:?}", region);
         }
 
         sampler

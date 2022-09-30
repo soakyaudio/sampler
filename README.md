@@ -51,7 +51,7 @@ There are few things that might fall apart on other systems, so any help with cr
 - [x] Code style, rustfmt
 - [x] Fix compiler warnings
 - [x] Multiple velocities
-- [ ] SFZ format
+- [x] SFZ format
 - [x] Unit tests
 - [x] Voice stealing
 - [x] WAV samples
