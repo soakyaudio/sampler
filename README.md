@@ -45,6 +45,7 @@ There are few things that might fall apart on other systems, so any help with cr
 - Polyphonic sampler instrument with linear ADSR envelope
 - Multiple sample layers based on note and velocity
 - [SFZ](https://sfzformat.com/) format loader (see [supported opcodes](https://github.com/soakyaudio/sampler/blob/3a0b0506292f21d3ac78297805aa7d8efef38f54/src/format/sfz_loader.rs#L73))
+- Supported audio file formats: WAV
 - [Here's some music](https://open.spotify.com/track/24LugbAAG8AIJGOLu52iOv?si=baf4c8c1f1fd498c) while you wait for more features...
 
 
